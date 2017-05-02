@@ -1,5 +1,5 @@
 import axios from 'axios'
-import Qs from 'querystring'
+import Qs from 'query-string'
 import md5 from 'md5'
 
 
@@ -32,6 +32,11 @@ export default {
   actions: {
     handleError,
     getStoreList: async (store, data) => await apiInit(store, "POST", `getStoreList.php`, data),
+    modStore: async (store, data) => await apiInit(store, "POST", `modStore.php`, data),
+    getMemberList: async (store, data) => await apiInit(store, "GET", `getMemberList.php`, data),
+    modMember: async (store, data) => await apiInit(store, "POST", `modMember.php`, data),
+    getAdvList: async (store, data) => await apiInit(store, "POST", `getAdvList.php`, data),
+    modAdv: async (store, data) => await apiInit(store, "POST", `modAdv.php`, data),
   }
 }
 
@@ -56,25 +61,27 @@ async function apiInit({state, commit, dispatch}, method, route, data, showErrMs
 
   commit('pushLoadingApi', url)
 
-  console.log({
-    method,
-    url,
-    headers,
-    data: {
-      ...getToken(),
+  var TimeToken = getToken()
+
+  if(method === 'GET') {
+
+    var queryData = Qs.stringify(data)
+    url = `${url}/${TimeToken.Timestamp}/${TimeToken.Token}?${queryData}`
+    console.log(url)
+    
+  }else {
+    data = {
+      ...TimeToken,
       ...data
-    },
-    withCredentials: true
-  })
+    }
+    console.log(data)
+  }
 
   var response = await axios({
     method,
     url,
     headers,
-    data: {
-      ...getToken(),
-      ...data
-    },
+    data,
     withCredentials: true
   });
 

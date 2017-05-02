@@ -14,7 +14,8 @@ export default {
     }
   },
   mounted() {
-    this.getStoreList({aa:123})
+    // this.getStoreList({aa:123})
+    this.getMemberList({aa:123})
 
   },
   computed: {
@@ -22,7 +23,8 @@ export default {
   },
   methods: {
     ...mapActions([
-      'getStoreList'
+      'getStoreList',
+      'getMemberList',
     ])
   }
 }
