@@ -1,13 +1,14 @@
 <template>
-  <div id="app">
-    <router-view></router-view>
+  <div id="home">
+    <h1>首頁</h1>
+    
   </div>
 </template>
 
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
 export default {
-  name: 'app',
+  name: 'Home',
   data() {
     return {
       
@@ -21,13 +22,7 @@ export default {
   },
   methods: {
     ...mapActions([
-      'getStoreList',
-      'getMemberList',
     ]),
   }
 }
 </script>
-
-<style lang="stylus" scoped>
-
-</style>

@@ -1,0 +1,24 @@
+$sidebar-width = 250px
+
+
+.clearfix
+  &:after
+    content: ""
+    display: table
+    clear: both
+
+.el-menu
+  // height: 100vh
+
+
+
+#dashboard 
+  @extends .clearfix
+.app-sidebar
+  width: $sidebar-width
+  float: left
+  background-color: #eef1f6
+  height: 100vh
+.app-content
+  width: "calc(100% - %s)" % $sidebar-width
+  float: left

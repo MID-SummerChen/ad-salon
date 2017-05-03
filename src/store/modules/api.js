@@ -1,6 +1,7 @@
 import axios from 'axios'
 import Qs from 'query-string'
 import md5 from 'md5'
+import '@/assets/style.styl'
 
 
 
@@ -40,21 +41,21 @@ export default {
   }
 }
 
-function getToken() {
-  var Timestamp = moment().unix()
-  var Time_md5 = md5(Timestamp)
-  var Token = Time_md5.substring(3, 7) + Time_md5.substring(10, 14) + Time_md5.substring(19, 25)
 
+function getToken() {
+  var Timestamp = moment().unix().toString()
+  var Time_md5 = md5(Timestamp)
+  var Token = Time_md5.substring(3, 8) + Time_md5.substring(10, 15) + Time_md5.substring(19, 26)
   return {
     Timestamp,
-    Token
+    Token,
   }
 }
 
 
 async function apiInit({state, commit, dispatch}, method, route, data, showErrMsg = true) {
   var headers = {
-    "Content-Type": "application/json"
+    "Content-Type": "application/x-www-form-urlencoded"
   }
 
   var url = `http://${state.host}/${state.path}/${state.apiVersion}/${route}`
@@ -63,26 +64,17 @@ async function apiInit({state, commit, dispatch}, method, route, data, showErrMs
 
   var TimeToken = getToken()
 
-  if(method === 'GET') {
-
-    var queryData = Qs.stringify(data)
-    url = `${url}/${TimeToken.Timestamp}/${TimeToken.Token}?${queryData}`
-    console.log(url)
-    
-  }else {
-    data = {
-      ...TimeToken,
-      ...data
+  data = {
+      ...data,
+      ...TimeToken
     }
-    console.log(data)
-  }
 
   var response = await axios({
     method,
     url,
     headers,
-    data,
-    withCredentials: true
+    data: Qs.stringify(data),
+    // withCredentials: true
   });
 
   commit('pullLoadingApi', url)
