@@ -32,12 +32,14 @@ export default {
   },
   actions: {
     handleError,
-    getStoreList: async (store, data) => await apiInit(store, "POST", `getStoreList.php`, data),
-    modStore: async (store, data) => await apiInit(store, "POST", `modStore.php`, data),
-    getMemberList: async (store, data) => await apiInit(store, "GET", `getMemberList.php`, data),
-    modMember: async (store, data) => await apiInit(store, "POST", `modMember.php`, data),
-    getAdvList: async (store, data) => await apiInit(store, "POST", `getAdvList.php`, data),
-    modAdv: async (store, data) => await apiInit(store, "POST", `modAdv.php`, data),
+    getStoreList: async (store, data) => await apiInit(store, "POST", "form", `getStoreList.php`, data),
+    modStore: async (store, data) => await apiInit(store, "POST", "form", `modStore.php`, data),
+    getMemberList: async (store, data) => await apiInit(store, "GET", "form", `getMemberList.php`, data),
+    modMember: async (store, data) => await apiInit(store, "POST", "form", `modMember.php`, data),
+    getAdvList: async (store, data) => await apiInit(store, "POST", "form", `getAdvList.php`, data),
+    modAdv: async (store, data) => await apiInit(store, "POST", "form", `modAdv.php`, data),
+    getDesignerList: async (store, data) => await apiInit(store, "POST", "form", `getDesignerList.php`, data),
+    modDesigner: async (store, data) => await apiInit(store, "POST", "form", `modDesigner.php`, data),
   }
 }
 
@@ -53,10 +55,14 @@ function getToken() {
 }
 
 
-async function apiInit({state, commit, dispatch}, method, route, data, showErrMsg = true) {
-  var headers = {
-    "Content-Type": "application/x-www-form-urlencoded"
-  }
+async function apiInit({state, commit, dispatch}, method, contentType, route, data, showErrMsg = true) {
+  var headers = {}
+  // if(contentType === 'multi') {
+  //   headers['Content-Type'] = 'multipart/form-data'
+  // }else {
+  //   headers['Content-Type'] = 'application/x-www-form-urlencoded'
+  // }
+  headers['Content-Type'] = 'application/x-www-form-urlencoded'
 
   var url = `http://${state.host}/${state.path}/${state.apiVersion}/${route}`
 
@@ -64,16 +70,18 @@ async function apiInit({state, commit, dispatch}, method, route, data, showErrMs
 
   var TimeToken = getToken()
 
-  data = {
-      ...data,
-      ...TimeToken
-    }
+  // var _data = {
+  //     ...data,
+  //     ...TimeToken
+  //   }
+
+  console.log(Qs.stringify(data))
 
   var response = await axios({
     method,
     url,
     headers,
-    data: Qs.stringify(data),
+    data: Qs.stringify(data) || data,
     // withCredentials: true
   });
 

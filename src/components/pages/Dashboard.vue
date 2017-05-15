@@ -1,6 +1,30 @@
 <template>
   <div id="dashboard">
-    <div class="app-sidebar">
+     <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" @click="sidebarShow = !sidebarShow">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Project name</a>
+        </div>
+        <!--<div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Settings</a></li>
+            <li><a href="#">Profile</a></li>
+            <li><a href="#">Help</a></li>
+          </ul>
+          <form class="navbar-form navbar-right">
+            <input type="text" class="form-control" placeholder="Search...">
+          </form>
+        </div>-->
+      </div>
+    </nav>
+    <div class="app-sidebar" :class="{'active': sidebarShow}">
       <el-menu default-active="2" class="el-menu-vertical-demo" :router="true" @open="handleOpen" @close="handleClose">
           <el-menu-item index="/home"><i class="el-icon-menu"></i>首頁</el-menu-item>
           <el-menu-item index="/ad"><i class="el-icon-menu"></i>廣告管理</el-menu-item>
@@ -28,7 +52,7 @@ export default {
   name: 'dashboard',
   data() {
     return {
-      
+      sidebarShow: false
     }
   },
   mounted() {
@@ -39,16 +63,10 @@ export default {
   },
   methods: {
     ...mapActions([
-      'getStoreList',
-      'getMemberList',
     ]),
-    handleOpen(key, keyPath) {
-      console.log(key, keyPath);
-    },
   }
 }
 </script>
 
 <style lang="stylus" scoped>
-
 </style>

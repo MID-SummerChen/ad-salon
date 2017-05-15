@@ -1,0 +1,24 @@
+{
+  "name": "ad-salon",
+  "description": "A Vue.js project",
+  "main": "",
+  "authors": [
+    "Ruby Chen <ruby@yun-ru.com>"
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "static/bower",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^3.2.1",
+    "lodash": "^4.17.4",
+    "moment": "^2.18.1",
+    "bootstrap": "^3.3.7"
+  }
+}

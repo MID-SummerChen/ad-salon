@@ -56,10 +56,10 @@ module.exports = {
       }
     ]
   },
-  plugins: [
-    new webpack.ProvidePlugin({
-        $: 'jquery',
-        _: 'lodash',
-    }),
-  ]
+  // plugins: [
+  //   new webpack.ProvidePlugin({
+  //       $: 'jquery',
+  //       _: 'lodash',
+  //   }),
+  // ]
 }

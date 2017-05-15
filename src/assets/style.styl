@@ -1,5 +1,9 @@
-$sidebar-width = 250px
+$sidebar-w = 250px
+$header-h = 50px
+$med-s = 600px
 
+* 
+  box-sizing: border-box
 
 .clearfix
   &:after
@@ -14,11 +18,41 @@ $sidebar-width = 250px
 
 #dashboard 
   @extends .clearfix
+
 .app-sidebar
-  width: $sidebar-width
+  padding-top: $header-h + 20px
+  width: $sidebar-w
   float: left
   background-color: #eef1f6
   height: 100vh
+  @media(max-width: $med-s)
+    width: 50vw
+    float: none
+    position: fixed 
+    overflow-y: scroll
+    z-index: 9
+    display: none
+  &.active 
+    @media(max-width: $med-s)
+      display: block
+
+
 .app-content
-  width: "calc(100% - %s)" % $sidebar-width
+  padding: 20px
+  padding-top: $header-h
+  width: "calc(100% - %s)" % $sidebar-w
   float: left
+  @media(max-width: $med-s)
+    width: 100vw
+    float: none 
+
+
+.modal .el-form
+  img 
+    max-height: 200px
+
+
+.el-table .cell
+  img 
+    max-height: 100px
+    margin: 10px 0

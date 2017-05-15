@@ -1,20 +1,118 @@
 <template>
-  <div id="ad">
-    <h1>廣告管理</h1>
-    
+  <div id="adv">
+    <div class="page-header">
+      <h1>廣告管理</h1>
+      <el-button type="primary" @click="onCreate">新增廣告</el-button>
+    </div>
+    <el-table
+      :data="advList"
+      style="width: 100%">
+      <el-table-column
+        prop="advName"
+        label="廣告名稱">
+      </el-table-column>
+      <el-table-column
+        width="200"
+        label="圖片">
+        <template scope="scope">
+          <img v-if="scope.row.pic" :src="'http://' + host + scope.row.pic" alt="">
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="sDate"
+        label="開始時間">
+      </el-table-column>
+      <el-table-column
+        prop="eDate"
+        label="結束時間">
+      </el-table-column>
+      
+      <el-table-column
+        label="狀態">
+        <template scope="scope">
+          {{toStatus(scope.row.stats)}}
+        </template>
+      </el-table-column>
+      <el-table-column
+        fixed="right"
+        label="操作"
+        width="100">
+        <template scope="scope">
+          
+          <el-button @click="onEdit(scope.row.advGuid)" type="text" size="small">编辑</el-button>
+          <el-button @click="onDel(scope.row.advGuid)" type="text" size="small">刪除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+
+     <!-- Modal -->
+    <div ref="modal" class="modal fade">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">廣告資訊</h4>
+          </div>
+          <div class="modal-body">
+            <el-form ref="form" :model="form" label-width="80px">
+              <el-form-item label="廣告圖片">
+                <input type="file" ref="fileSelector">
+                <div style="margin-top: 20px"></div>
+                <img v-if="form.imgSrc" :src="form.imgSrc" alt="">
+              </el-form-item>
+              <el-form-item label="廣告名稱">
+                <el-input v-model="form.advName"></el-input>
+              </el-form-item>
+              <el-form-item label="廣告期間">
+                <el-col :span="11">
+                  <el-date-picker type="date" placeholder="開始時間" v-model="form.sDate" style="width: 100%;"></el-date-picker>
+                </el-col>
+                <el-col :span="2" style="text-align: center">-</el-col>
+                <el-col :span="11">
+                  <el-date-picker type="date" placeholder="結束時間" v-model="form.eDate" style="width: 100%;"></el-date-picker>
+                </el-col>
+              </el-form-item>
+              
+              
+              <el-form-item label="狀態">
+                <el-switch on-text="" off-text="" v-model="form.status"></el-switch>
+              </el-form-item>
+              
+            </el-form>
+          </div>
+          <div class="modal-footer">
+            <el-button type="primary" @click="onSubmit">確認送出</el-button>
+            <el-button data-dismiss="modal">取消</el-button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal -->
   </div>
 </template>
 
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
+import globalMixin from '@/mixins/global'
 export default {
-  name: 'Store',
+  name: 'Adv',
+  mixins: [globalMixin],
   data() {
     return {
-      
+      advList: [],
+      form: {
+        id: "",
+        advName: "",
+        sDate: moment(),
+        eDate: moment(),
+        status: "",
+        imgSrc: ""
+      }
     }
   },
   mounted() {
+    this._getAdvList()
 
   },
   computed: {
@@ -22,7 +120,101 @@ export default {
   },
   methods: {
     ...mapActions([
+      'getAdvList',
+      'modAdv',
     ]),
+    _initAdv(adv) {
+      return {
+        ...adv,
+      }
+    },
+    clearForm() {
+      this.form = {
+        id: "",
+        advName: "",
+        sDate: moment(),
+        eDate: moment(),
+        status: "",
+        imgSrc: ""
+      }
+    },
+    async _getAdvList() {
+      var res = await this.getAdvList()
+      if(res.code === 0) {
+        this.advList = res.data.advList.map(adv => this._initAdv(adv))
+      }
+    },
+    onDel(id) {
+      this.$confirm('是否確定刪除？', '提示', {
+        confirmButtonText: '確認刪除',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        var data = {
+          advGuid: id,
+          del: 1
+        }
+        var res = await this.modAdv(data)
+        if(res.code === 0) {
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          });
+          this._getAdvList()
+        }
+        
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
+      
+    },
+    onEdit(id) {
+      this.clearForm()
+      var f = this.form
+      var i = this.advList.findIndex(adv => adv.advGuid === id)
+      if(i > -1) {
+        var s = this.advList[i]
+        f.id = id
+        f.advName = s.advName
+        f.sDate = s.sDate
+        f.eDate = s.eDate
+        f.status = s.stats == 1
+        f.imgSrc = s.pic ? `http://${this.host}${s.pic}` : ""
+        $(this.$refs.modal).modal('show')
+        console.log(id)
+      }
+      
+    },
+    onCreate() {
+      this.clearForm()
+      $(this.$refs.modal).modal('show')
+    },
+    async onSubmit() {
+      var f = this.form
+      var data = {
+        advGuid: f.id || -1,
+        advName: f.advName,
+        sDate: moment(f.sDate).format('YYYY-MM-DD'),
+        eDate: moment(f.eDate).format('YYYY-MM-DD'),
+        stats: f.status ? 1 : 2,
+      }
+
+      var formData = new FormData()
+      formData.append('pic', this.$refs.fileSelector.files[0])
+      _.forEach(data, (v, k) => formData.append(k, v))
+      var res = await this.modAdv(formData)
+      if(res.code === 0) {
+        this._getAdvList()
+        $(this.$refs.modal).modal('hide')
+        this.$message({
+          type: 'success',
+          message: `${f.id ? '更新' : '新增'}成功!`
+        });
+      }
+    }
   }
 }
 </script>

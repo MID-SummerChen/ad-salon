@@ -5,10 +5,11 @@ import App from './App'
 import router from './router'
 import store from './store'
 import ElementUI from 'element-ui'
-import 'element-ui/lib/theme-default/index.css'
+import locale from 'element-ui/lib/locale/lang/zh-TW'
+import 'uikit'
 import 'normalize.css'
-
-Vue.use(ElementUI)
+import 'element-ui/lib/theme-default/index.css'
+Vue.use(ElementUI, {locale})
 
 Vue.config.productionTip = false
 Vue.config.silent = true
