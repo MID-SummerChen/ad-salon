@@ -12,10 +12,6 @@
         label="店家名稱">
       </el-table-column>
       <el-table-column
-        prop="city"
-        label="城市">
-      </el-table-column>
-      <el-table-column
         prop="mobile"
         label="聯絡電話">
       </el-table-column>
@@ -58,23 +54,21 @@
             <h4 class="modal-title">店家資訊</h4>
           </div>
           <div class="modal-body">
-            <el-form ref="form" :model="form" label-width="80px">
+            <el-form ref="form" :model="form" :rules="rules" label-width="120px">
               <el-form-item label="店家圖片">
                 <input type="file" ref="fileSelector">
-                <div style="margin-top: 20px"></div>
-                <img v-if="form.imgSrc" :src="form.imgSrc" alt="">
+                <div v-if="form.imgSrc" style="margin-top: 20px">
+                  <img :src="form.imgSrc" alt="">
+                </div>
               </el-form-item>
-              <el-form-item label="店家編號">
+              <el-form-item label="店家編號" prop="noid">
                 <el-input v-model="form.noid"></el-input>
               </el-form-item>
-              <el-form-item label="店家名稱">
+              <el-form-item label="店家名稱" prop="storeName">
                 <el-input v-model="form.storeName"></el-input>
               </el-form-item>
               <el-form-item label="電話">
                 <el-input v-model="form.phone"></el-input>
-              </el-form-item>
-              <el-form-item label="城市">
-                <el-input v-model="form.city"></el-input>
               </el-form-item>
               <el-form-item label="地址">
                 <el-input v-model="form.addr"></el-input>
@@ -109,6 +103,7 @@
 
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
+import { required, minLength, between } from 'vuelidate/lib/validators'
 import globalMixin from '@/mixins/global'
 export default {
   name: 'Store',
@@ -122,13 +117,20 @@ export default {
         storeName: "",
         phone: "",
         addr: "",
-        city: "",
         openTime: "",
         mobile: "",
         contact: "",
         mobile: "",
-        status: "",
+        status: true,
         imgSrc: "",
+      },
+      rules: {
+        storeName: [
+          { required: true, message: '不可為空'}
+        ],
+        noid: [
+          { required: true, message: '不可為空'}
+        ],
       }
     }
   },
@@ -144,23 +146,20 @@ export default {
     _initStore(store) {
       return {
         ...store,
-        city: store.city - 0,
-        stats: store.stats - 0,
-        storeGuid: store.storeGuid - 0,
       }
     },
     clearForm() {
+      this.$refs.form.resetFields()
       this.form = {
         id: "",
         noid: "",
         storeName: "",
         phone: "",
         addr: "",
-        city: "",
         openTime: "",
         contact: "",
         mobile: "",
-        status: "",
+        status: true,
         imgSrc: "",
       }
     },
@@ -208,12 +207,11 @@ export default {
         f.storeName = s.storeName
         f.phone = s.phone
         f.addr = s.address
-        f.city = s.city-0
         f.openTime = s.openTime
         f.contact = s.contact
         f.mobile = s.mobile
         f.status = s.stats == 1
-        f.imgSrc = `http://${this.host}${s.pic}`
+        f.imgSrc = s.pic ? `http://${this.host}${s.pic}` : ""
         $(this.$refs.modal).modal('show')
         console.log(id)
       }
@@ -224,32 +222,39 @@ export default {
       $(this.$refs.modal).modal('show')
     },
     async onSubmit() {
-      var f = this.form
-      var data = {
-        storeGuid: f.id || -1,
-        noid: f.noid,
-        storeName: f.storeName,
-        phone: f.phone,
-        address: f.addr,
-        city: f.city,
-        openTime: f.openTime,
-        contact: f.contact,
-        mobile: f.mobile,
-        stats: f.status ? 1 : 2,
-      }
+      this.$refs.form.validate(_validCallback.bind(this));
+      async function _validCallback(valid) {
+        if(valid) {
+          var f = this.form
+          var data = {
+            storeGuid: f.id || -1,
+            noid: f.noid,
+            storeName: f.storeName,
+            phone: f.phone,
+            address: f.addr,
+            openTime: f.openTime,
+            contact: f.contact,
+            mobile: f.mobile,
+            stats: f.status ? 1 : 2,
+          }
 
-      var formData = new FormData()
-      formData.append('pic', this.$refs.fileSelector.files[0])
-      _.forEach(data, (v, k) => formData.append(k, v))
-      var res = await this.modStore(formData)
-      if(res.code === 0) {
-        this._getStoreList()
-        $(this.$refs.modal).modal('hide')
-        this.$message({
-          type: 'success',
-          message: `${f.id ? '更新' : '新增'}成功!`
-        });
+          var formData = new FormData()
+          formData.append('pic', this.$refs.fileSelector.files[0])
+          _.forEach(data, (v, k) => formData.append(k, v))
+          var res = await this.modStore(formData)
+          if(res.code === 0) {
+            this._getStoreList()
+            $(this.$refs.modal).modal('hide')
+            this.$message({
+              type: 'success',
+              message: `${f.id ? '更新' : '新增'}成功!`
+            });
+          }
+        }else {
+          this.$message.error("表單資訊不完整")
+        }
       }
+      
     }
   }
 }

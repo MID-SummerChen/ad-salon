@@ -55,13 +55,14 @@
             <h4 class="modal-title">廣告資訊</h4>
           </div>
           <div class="modal-body">
-            <el-form ref="form" :model="form" label-width="80px">
+            <el-form ref="form" :model="form" :rules="rules" label-width="120px">
               <el-form-item label="廣告圖片">
                 <input type="file" ref="fileSelector">
-                <div style="margin-top: 20px"></div>
-                <img v-if="form.imgSrc" :src="form.imgSrc" alt="">
+                <div v-if="form.imgSrc" style="margin-top: 20px">
+                  <img :src="form.imgSrc" alt="">
+                </div>
               </el-form-item>
-              <el-form-item label="廣告名稱">
+              <el-form-item label="廣告名稱" prop="advName">
                 <el-input v-model="form.advName"></el-input>
               </el-form-item>
               <el-form-item label="廣告期間">
@@ -94,6 +95,7 @@
 
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
+import { required, minLength, between } from 'vuelidate/lib/validators'
 import globalMixin from '@/mixins/global'
 export default {
   name: 'Adv',
@@ -106,8 +108,13 @@ export default {
         advName: "",
         sDate: moment(),
         eDate: moment(),
-        status: "",
+        status: true,
         imgSrc: ""
+      },
+      rules: {
+        advName: [
+          { required: true, message: '不可為空'}
+        ],
       }
     }
   },
@@ -129,12 +136,13 @@ export default {
       }
     },
     clearForm() {
+      this.$refs.form.resetFields()
       this.form = {
         id: "",
         advName: "",
         sDate: moment(),
         eDate: moment(),
-        status: "",
+        status: true,
         imgSrc: ""
       }
     },
@@ -193,27 +201,37 @@ export default {
       $(this.$refs.modal).modal('show')
     },
     async onSubmit() {
-      var f = this.form
-      var data = {
-        advGuid: f.id || -1,
-        advName: f.advName,
-        sDate: moment(f.sDate).format('YYYY-MM-DD'),
-        eDate: moment(f.eDate).format('YYYY-MM-DD'),
-        stats: f.status ? 1 : 2,
-      }
+      this.$refs.form.validate(_validCallback.bind(this));
 
-      var formData = new FormData()
-      formData.append('pic', this.$refs.fileSelector.files[0])
-      _.forEach(data, (v, k) => formData.append(k, v))
-      var res = await this.modAdv(formData)
-      if(res.code === 0) {
-        this._getAdvList()
-        $(this.$refs.modal).modal('hide')
-        this.$message({
-          type: 'success',
-          message: `${f.id ? '更新' : '新增'}成功!`
-        });
+      async function _validCallback(valid) {
+        if(valid) {
+          var f = this.form
+          var data = {
+            advGuid: f.id || -1,
+            advName: f.advName,
+            sDate: moment(f.sDate).format('YYYY-MM-DD'),
+            eDate: moment(f.eDate).format('YYYY-MM-DD'),
+            stats: f.status ? 1 : 2,
+          }
+
+          var formData = new FormData()
+          formData.append('pic', this.$refs.fileSelector.files[0])
+          _.forEach(data, (v, k) => formData.append(k, v))
+          var res = await this.modAdv(formData)
+          if(res.code === 0) {
+            this._getAdvList()
+            $(this.$refs.modal).modal('hide')
+            this.$message({
+              type: 'success',
+              message: `${f.id ? '更新' : '新增'}成功!`
+            });
+          }
+
+        }else {
+          this.$message.error("表單資訊不完整")
+        }
       }
+      
     }
   }
 }

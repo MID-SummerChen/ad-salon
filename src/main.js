@@ -6,9 +6,11 @@ import router from './router'
 import store from './store'
 import ElementUI from 'element-ui'
 import locale from 'element-ui/lib/locale/lang/zh-TW'
+import Vuelidate from 'vuelidate'
 import 'uikit'
 import 'normalize.css'
 import 'element-ui/lib/theme-default/index.css'
+Vue.use(Vuelidate)
 Vue.use(ElementUI, {locale})
 
 Vue.config.productionTip = false

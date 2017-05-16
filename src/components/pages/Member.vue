@@ -2,90 +2,170 @@
   <div id="member">
     <div class="page-header">
       <h1>會員管理</h1>
+      <el-button type="primary" @click="onCreate">新增會員</el-button>
     </div>
-    
     <el-table
-    :data="memberList"
-    style="width: 100%">
-    <!--<el-table-column type="expand">
-      <template scope="props">
-        <el-form inline>
-          <el-form-item label="會員帳號">
-            <span>{{ props.row.username }}</span>
-          </el-form-item>
-          <el-form-item label="暱稱">
-            <span>{{ props.row.nick }}</span>
-          </el-form-item>
-          <el-form-item label="手機">
-            <span>{{ props.row.mobile }}</span>
-          </el-form-item>
-          <el-form-item label="Email">
-            <span>{{ props.row.email }}</span>
-          </el-form-item>
-          <el-form-item label="性別">
-            <span>{{ props.row.gender }}</span>
-          </el-form-item>
-          <el-form-item label="剩餘紅利">
-            <span>{{ props.row.bonus }}</span>
-          </el-form-item>
-          <el-form-item label="加入日期">
-            <span>{{ props.row.addDate }}</span>
-          </el-form-item>
-          <el-form-item label="最新訂購日期">
-            <span>{{ props.row.orderDate }}</span>
-          </el-form-item>
-        </el-form>
-      </template>
-    </el-table-column>-->
-    <el-table-column
-      label="會員帳號"
-      prop="username">
-    </el-table-column>
-    <el-table-column
-      label="暱稱"
-      prop="nick">
-    </el-table-column>
-    <el-table-column
-      label="手機"
-      prop="mobile">
-    </el-table-column>
-    <el-table-column
-      label="剩餘紅利"
-      prop="bonus">
-    </el-table-column>
-    <el-table-column
-      label="最新訂購日期"
-      prop="orderDate">
-    </el-table-column>
-  </el-table>
+      :data="memberList"
+      style="width: 100%">
+      <el-table-column
+        label="會員帳號"
+        prop="username">
+      </el-table-column>
+      <el-table-column
+        label="暱稱"
+        prop="nick">
+      </el-table-column>
+      <el-table-column
+        label="手機"
+        prop="mobile">
+      </el-table-column>
+      <el-table-column
+        label="剩餘紅利"
+        prop="bonus">
+      </el-table-column>
+      <el-table-column
+        label="最新訂購日期"
+        prop="orderDate">
+      </el-table-column>
+
+      <el-table-column
+        label="狀態">
+        <template scope="scope">
+          {{toStatus(scope.row.stats)}}
+        </template>
+      </el-table-column>
+      <el-table-column
+        fixed="right"
+        label="操作"
+        width="100">
+        <template scope="scope">
+          <el-button @click="onEdit(scope.row.memberGuid)" type="text" size="small">编辑</el-button>
+          <el-button @click="onDel(scope.row.memberGuid)" type="text" size="small">刪除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+
+     <!-- Modal -->
+    <div ref="modal" class="modal fade">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">會員資訊</h4>
+          </div>
+          <div class="modal-body">
+            <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+              <el-form-item label="帳號" prop="username">
+                <el-input v-model="form.username"></el-input>
+              </el-form-item>
+              <el-form-item label="暱稱" prop="nick">
+                <el-input v-model="form.nick"></el-input>
+              </el-form-item>
+              <el-form-item label="密碼" prop="pw">
+                <el-input v-model="form.pw"></el-input>
+              </el-form-item>
+              <el-form-item label="密碼確認" prop="pw_c">
+                <el-input v-model="form.pw_c"></el-input>
+              </el-form-item>
+              
+              <el-form-item label="狀態">
+                <el-switch on-text="" off-text="" v-model="form.status"></el-switch>
+              </el-form-item>
+              
+            </el-form>
+          </div>
+          <div class="modal-footer">
+            <el-button type="primary" @click="onSubmit">確認送出</el-button>
+            <el-button data-dismiss="modal">取消</el-button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal -->
   </div>
 </template>
 
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
+import { required, minLength, between, sameAs } from 'vuelidate/lib/validators'
+import globalMixin from '@/mixins/global'
 export default {
   name: 'Member',
+  mixins: [globalMixin],
   data() {
+    var validPw = (rule, value, cb) => {
+      if(this.form.id) {
+        cb();
+      } else if(value === '') {
+        cb(new Error('不可為空'));
+      } else {
+        cb();
+      }
+    };
+    var validPwConfirm = (rule, value, cb) => {
+      if(this.form.id) {
+        cb();
+      } else if(value === '') {
+        cb(new Error('不可為空'));
+      } else if (value != this.form.pw) {
+        cb(new Error('密碼不同!'));
+      } else {
+        cb();
+      }
+    };
     return {
-      memberList: []
+      memberList: [],
+      form: {
+        id: "",
+        username: "",
+        nick: "",
+        pw: "",
+        pw_c: "",
+        status: true,
+      },
+      rules: {
+        username: [
+          { required: true, message: '不可為空'}
+        ],
+        nick: [
+          { required: true, message: '不可為空'}
+        ],
+        pw: [
+          { validator: validPw},
+        ],
+        pw_c: [
+          { validator: validPwConfirm},
+        ],
+      }
     }
   },
   mounted() {
     this._getMemberList()
+
   },
   computed: {
 
   },
   methods: {
     ...mapActions([
-      'getMemberList'
+      'getMemberList',
+      'modMember',
     ]),
     _initMember(member) {
       return {
         ...member,
-        gender: _.toNumber(member.gender),
-        stats: _.toNumber(member.stats),
-        bonus: _.toNumber(member.bonus),
+      }
+    },
+    clearForm() {
+      this.$refs.form.resetFields()
+      this.form = {
+        id: "",
+        username: "",
+        nick: "",
+        pw: "",
+        pw_c: "",
+        status: true,
       }
     },
     async _getMemberList() {
@@ -94,6 +174,80 @@ export default {
         this.memberList = res.data.memberList.map(member => this._initMember(member))
       }
     },
+    onDel(id) {
+      this.$confirm('是否確定刪除？', '提示', {
+        confirmButtonText: '確認刪除',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        var data = {
+          memberGuid: id,
+          del: 1
+        }
+        var res = await this.modMember(data)
+        if(res.code === 0) {
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          });
+          this._getMemberList()
+        }
+        
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
+      
+    },
+    onEdit(id) {
+      this.clearForm()
+      var f = this.form
+      var i = this.memberList.findIndex(member => member.memberGuid === id)
+      if(i > -1) {
+        var s = this.memberList[i]
+        f.id = id
+        f.username = s.username
+        f.nick = s.nick
+        f.status = s.stats == 1
+        $(this.$refs.modal).modal('show')
+      }
+      
+    },
+    onCreate() {
+      this.clearForm()
+      $(this.$refs.modal).modal('show')
+    },
+    async onSubmit() {
+      var f = this.form
+      this.$refs.form.validate(_validCallback.bind(this))
+
+      async function _validCallback(valid) {
+        if(valid) {
+          var data = {
+            memberGuid: f.id || -1,
+            stats: f.status ? 1 : 2,
+            username: f.username,
+            password: f.pw,
+            nick: f.nick,
+          }
+          var res = await this.modMember(data)
+          if(res.code === 0) {
+            this._getMemberList()
+            $(this.$refs.modal).modal('hide')
+            this.$message({
+              type: 'success',
+              message: `${f.id ? '更新' : '新增'}成功!`
+            });
+          }
+
+        }else {
+          this.$message.error("表單資訊不完整")
+        }
+      }
+      
+    }
   }
 }
 </script>

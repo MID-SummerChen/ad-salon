@@ -2,7 +2,7 @@ import axios from 'axios'
 import Qs from 'query-string'
 import md5 from 'md5'
 import '@/assets/style.styl'
-
+import ElementUI from 'element-ui'
 
 
 
@@ -102,9 +102,12 @@ class Response {
   constructor(response) {
     this.code = response.data.errorcode
     this.data = response.data
+    this.errMsg = response.data.desc || ""
   }
 }
 
 function handleError(store, res) {
+  console.log(res)
+  ElementUI.Message.error(res.errMsg)
 
 }
