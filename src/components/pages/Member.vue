@@ -21,10 +21,12 @@
       </el-table-column>
       <el-table-column
         label="剩餘紅利"
+        width="100"
         prop="bonus">
       </el-table-column>
       <el-table-column
-        label="最新訂購日期"
+        label="訂購日期"
+        width="120"
         prop="orderDate">
       </el-table-column>
 
@@ -63,10 +65,25 @@
                 <el-input v-model="form.nick"></el-input>
               </el-form-item>
               <el-form-item label="密碼" prop="pw">
-                <el-input v-model="form.pw"></el-input>
+                <el-input type="password" v-model="form.pw"></el-input>
               </el-form-item>
               <el-form-item label="密碼確認" prop="pw_c">
-                <el-input v-model="form.pw_c"></el-input>
+                <el-input type="password" v-model="form.pw_c"></el-input>
+              </el-form-item>
+              <el-form-item label="信箱" prop="email">
+                <el-input v-model="form.email"></el-input>
+              </el-form-item>
+              <el-form-item label="手機" prop="mobile">
+                <el-input v-model="form.mobile"></el-input>
+              </el-form-item>
+              <el-form-item label="紅利">
+                <el-input v-model="form.bonus"></el-input>
+              </el-form-item>
+              <el-form-item label="性別" prop="gender">
+                <el-radio-group v-model="form.gender">
+                  <el-radio :label="1">男</el-radio>
+                  <el-radio :label="2">女</el-radio>
+                </el-radio-group>
               </el-form-item>
               
               <el-form-item label="狀態">
@@ -120,6 +137,10 @@ export default {
         id: "",
         username: "",
         nick: "",
+        email: "",
+        mobile: "",
+        gender: 1,
+        bonus: 0,
         pw: "",
         pw_c: "",
         status: true,
@@ -163,6 +184,10 @@ export default {
         id: "",
         username: "",
         nick: "",
+        email: "",
+        mobile: "",
+        gender: 1,
+        bonus: 0,
         pw: "",
         pw_c: "",
         status: true,
@@ -210,6 +235,11 @@ export default {
         f.id = id
         f.username = s.username
         f.nick = s.nick
+        f.email = s.email
+        f.mobile = s.mobile
+        f.gender = s.gender - 0
+        f.addDate = s.addDate
+        f.bonus = s.bonus
         f.status = s.stats == 1
         $(this.$refs.modal).modal('show')
       }
@@ -229,8 +259,12 @@ export default {
             memberGuid: f.id || -1,
             stats: f.status ? 1 : 2,
             username: f.username,
-            password: f.pw,
+            pwd: f.pw,
             nick: f.nick,
+            email: f.email,
+            mobile: f.mobile,
+            gender: f.gender,
+            bonus: f.bonus,
           }
           var res = await this.modMember(data)
           if(res.code === 0) {

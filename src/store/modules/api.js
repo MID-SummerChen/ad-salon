@@ -32,6 +32,10 @@ export default {
   },
   actions: {
     handleError,
+    getOrderList: async (store, data) => await apiInit(store, "POST", "form", `getOrderList.php`, data),
+    modOrder: async (store, data) => await apiInit(store, "POST", "form", `modOrder.php`, data),
+    getWorkList: async (store, data) => await apiInit(store, "POST", "form", `getWorkList.php`, data),
+    modWork: async (store, data) => await apiInit(store, "POST", "form", `modWork.php`, data),
     getStoreList: async (store, data) => await apiInit(store, "POST", "form", `getStoreList.php`, data),
     modStore: async (store, data) => await apiInit(store, "POST", "form", `modStore.php`, data),
     getMemberList: async (store, data) => await apiInit(store, "GET", "form", `getMemberList.php`, data),

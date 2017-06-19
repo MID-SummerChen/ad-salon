@@ -7,6 +7,7 @@ import Ad from '@/components/pages/Ad'
 import Designer from '@/components/pages/Designer'
 import Permission from '@/components/pages/Permission'
 import Order from '@/components/pages/Order'
+import Work from '@/components/pages/Work'
 import Login from '@/components/pages/Login'
 import Dashboard from '@/components/pages/Dashboard'
 
@@ -38,6 +39,11 @@ export default new Router({
           path: '/member',
           name: 'Member',
           component: Member
+        },
+        {
+          path: '/work',
+          name: 'Work',
+          component: Work
         },
         {
           path: '/ad',

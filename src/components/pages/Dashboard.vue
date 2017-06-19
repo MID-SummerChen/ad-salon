@@ -9,7 +9,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">Project name</a>
+          <a class="navbar-brand" href="#">AD Salon</a>
         </div>
         <!--<div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
@@ -32,6 +32,7 @@
           <el-menu-item index="/designer"><i class="el-icon-menu"></i>設計師管理</el-menu-item>
           <el-menu-item index="/member"><i class="el-icon-menu"></i>會員管理</el-menu-item>
           <el-menu-item index="/order"><i class="el-icon-menu"></i>訂單管理</el-menu-item>
+          <el-menu-item index="/work"><i class="el-icon-menu"></i>作品管理</el-menu-item>
           <el-menu-item index="/permission"><i class="el-icon-menu"></i>權限管理</el-menu-item>
           <!--<el-submenu index="/store">
             <template slot="title"><i class="el-icon-menu"></i>店家管理</template>

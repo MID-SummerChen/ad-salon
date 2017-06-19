@@ -8,6 +8,12 @@
       :data="designerList"
       style="width: 100%">
       <el-table-column
+        label="所屬店家">
+        <template scope="scope">
+          {{toStore(scope.row.storeGuid)}}
+        </template>
+      </el-table-column>
+      <el-table-column
         label="設計師帳號"
         prop="username">
       </el-table-column>
@@ -49,35 +55,35 @@
             <el-form ref="form" :model="form" :rules="rules" label-width="120px">
               <el-form-item label="所屬店家" prop="store">
                 <el-select v-model="form.store">
-                  <el-option v-for="s in storeOpts" :label="s.label" :value="s.value"></el-option>
+                  <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
                 </el-select>
                 
               </el-form-item>
               <el-form-item label="帳號" prop="username">
-                <el-input v-model="form.username"></el-input>
+                <el-input v-model="form.username" :disabled="!!form.id"></el-input>
               </el-form-item>
               <el-form-item label="暱稱" prop="nick">
                 <el-input v-model="form.nick"></el-input>
               </el-form-item>
               <el-form-item label="密碼" prop="pw">
-                <el-input v-model="form.pw"></el-input>
+                <el-input type="password" v-model="form.pw"></el-input>
               </el-form-item>
               <el-form-item label="密碼確認" prop="pw_c">
-                <el-input v-model="form.pw_c"></el-input>
+                <el-input type="password" v-model="form.pw_c"></el-input>
               </el-form-item>
               <el-form-item label="生日" prop="birth">
                 <el-date-picker v-model="form.birth" type="date"></el-date-picker>
               </el-form-item>
               <el-form-item label="加入年份" prop="sinceYear">
-                <el-date-picker v-model="form.sinceYear" type="date"></el-date-picker>
+                <el-date-picker v-model="form.sinceYear" type="year"></el-date-picker>
               </el-form-item>
               <el-form-item label="工作時間" prop="workingTime">
                 <el-input v-model="form.workingTime"></el-input>
               </el-form-item>
               <el-form-item label="性別" prop="gender">
                 <el-radio-group v-model="form.gender">
-                  <el-radio :label="1">男</el-radio>
-                  <el-radio :label="2">女</el-radio>
+                  <el-radio label="1">男</el-radio>
+                  <el-radio label="2">女</el-radio>
                 </el-radio-group>
               </el-form-item>
               
@@ -131,10 +137,7 @@ export default {
     };
     return {
       designerList: [],
-      storeOpts: [
-        {label: "測試站台1", value: 1},
-        {label: "測試站台2", value: 2},
-      ],
+      storeList: [],
       form: {
         id: "",
         username: "",
@@ -146,7 +149,7 @@ export default {
         birth: moment(),
         desc: "",
         workingTime: "",
-        gender: 1,
+        gender: "1",
         sinceYear: moment(),
       },
       rules: {
@@ -181,9 +184,12 @@ export default {
     ]),
     _initDesigner(designer) {
       return {
-        ...designer,
-        gender: this.toGender(designer.gender)
+        ...designer
       }
+    },
+    toStore(id) {
+      var i = this.storeList.findIndex(store => store.storeGuid === id)
+      return i > -1 ? this.storeList[i].storeName : ''
     },
     clearForm() {
       this.$refs.form.resetFields()
@@ -198,20 +204,20 @@ export default {
         birth: moment(),
         desc: "",
         workingTime: "",
-        gender: 1,
+        gender: "1",
         sinceYear: moment(),
       }
     },
     async _getStoreList() {
       var res = await this.getStoreList()
       if(res.code === 0) {
-        this.storeOpts = res.data.storeList.map(store => ({label: store.storeName, value: store.storeGuid}))
+        this.storeList = res.data.storeList
       }
     },
     async _getDesignerList() {
       var res = await this.getDesignerList()
       if(res.code === 0) {
-        this.designerList = res.data.memberList.map(designer => this._initDesigner(designer))
+        this.designerList = res.data.designerList.map(designer => this._initDesigner(designer))
       }
     },
     onDel(id) {
@@ -250,6 +256,11 @@ export default {
         f.id = id
         f.username = s.username
         f.nick = s.nick
+        f.store = s.storeGuid
+        f.birth = moment(s.dob)
+        f.desc = s.description
+        f.workingTime = s.workingTime
+        f.gender = s.gender
         f.status = s.stats == 1
         $(this.$refs.modal).modal('show')
       }
@@ -276,7 +287,7 @@ export default {
             description: f.desc,
             workingTime: f.workingTime,
             gender: f.gender,
-            sinceYear: moment(f.sinceYear).format('YYYY-MM-DD'),
+            sinceYear: moment(f.sinceYear).format('YYYY'),
           }
           var res = await this.modDesigner(data)
           if(res.code === 0) {
