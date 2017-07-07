@@ -18,43 +18,22 @@
     <el-table
       :data="designerList"
       style="width: 100%">
-      <el-table-column
-        label="所屬店家">
+      <el-table-column label="所屬店家" width="150">
         <template scope="scope">
           {{toStore(scope.row.storeGuid)}}
         </template>
       </el-table-column>
-      <el-table-column
-        label="設計師帳號"
-        prop="username">
-      </el-table-column>
-      <el-table-column
-        label="暱稱"
-        prop="nick">
-      </el-table-column>
-      <el-table-column
-        label="作品數"
-        prop="workNum">
-      </el-table-column>
-      <el-table-column
-        label="成交(總)"
-        prop="orderDone">
-      </el-table-column>
-      <el-table-column
-        label="成交(月)"
-        prop="orderDoneMon">
-      </el-table-column>
-
-      <el-table-column
-        label="狀態">
+      <el-table-column label="設計師帳號" prop="username" width="120"></el-table-column>
+      <el-table-column label="暱稱" prop="nick" width="120"></el-table-column>
+      <el-table-column label="作品數" prop="workNum" width="100"></el-table-column>
+      <el-table-column label="成交(總)" prop="orderDone" width="100"></el-table-column>
+      <el-table-column label="成交(月)" prop="orderDoneMon" width="100"></el-table-column>
+      <el-table-column label="狀態">
         <template scope="scope">
           {{toStatus(scope.row.stats)}}
         </template>
       </el-table-column>
-      <el-table-column
-        fixed="right"
-        label="操作"
-        width="100">
+      <el-table-column fixed="right" label="操作" width="100">
         <template scope="scope">
           <el-button @click="onEdit(scope.row.designerGuid)" type="text" size="small">编辑</el-button>
           <el-button @click="onDel(scope.row.designerGuid)" type="text" size="small">刪除</el-button>
@@ -95,7 +74,7 @@
               <el-form-item label="生日" prop="birth">
                 <el-date-picker v-model="form.birth" type="date"></el-date-picker>
               </el-form-item>
-              <el-form-item label="加入年份" prop="sinceYear">
+              <el-form-item label="資歷(since)" prop="sinceYear">
                 <el-date-picker v-model="form.sinceYear" type="year"></el-date-picker>
               </el-form-item>
               <el-form-item label="工作時間" prop="workingTime">

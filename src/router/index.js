@@ -6,6 +6,8 @@ import Store from '@/components/pages/Store'
 import Basic from '@/components/pages/Basic'
 import Ad from '@/components/pages/Ad'
 import Designer from '@/components/pages/Designer'
+import ServicePrice from '@/components/pages/ServicePrice'
+import Schedule from '@/components/pages/Schedule'
 import Permission from '@/components/pages/Permission'
 import Order from '@/components/pages/Order'
 import Work from '@/components/pages/Work'
@@ -36,6 +38,17 @@ export default new Router({
           name: 'Basic',
           component: Basic
         },
+        {
+          path: '/service',
+          name: 'ServicePrice',
+          component: ServicePrice
+        },
+        {
+          path: '/schedule',
+          name: 'Schedule',
+          component: Schedule
+        },
+
         {
           path: '/store',
           name: 'Store',

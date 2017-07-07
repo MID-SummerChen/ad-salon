@@ -2,45 +2,49 @@
   <div id="work">
     <div class="page-header">
       <h1>作品管理</h1>
-      <el-button type="primary" @click="onCreate">新增作品</el-button>
+      <el-row :gutter="10">
+        <el-col :span="6">
+          <el-select style="width: 100%" v-model="searchForm.storeGuid">
+            <el-option label="全部" value=""></el-option>
+            <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
+          </el-select>
+        </el-col>
+        <el-col :span="6">
+          <el-select style="width: 100%" v-model="searchForm.designerGuid">
+            <el-option label="全部" value=""></el-option>
+            <el-option v-for="d in designerList" :label="d.nick" :value="d.designerGuid"></el-option>
+          </el-select>
+        </el-col>
+        <el-col :span="6">
+          <el-button type="primary" @click="onSearch">搜尋</el-button>
+          <el-button type="danger" @click="onCreate">新增作品</el-button>
+        </el-col>
+      </el-row>
     </div>
-    <el-table
-      :data="workList"
-      style="width: 100%">
-      <el-table-column
-        width="200"
-        label="作品圖">
+    <el-table :data="workList" style="width: 100%">
+      <el-table-column width="200" label="作品圖">
         <template scope="scope">
-          <img v-if="scope.row.pic1" :src="'http://' + host + scope.row.pic1" alt="">
+          <img v-if="scope.row.pic1" :src="scope.row.pic1" alt="">
         </template>
       </el-table-column>
-      <el-table-column
-        width="200"
-        prop="workName"
-        label="作品名稱">
-      </el-table-column>
-      <el-table-column
-        label="設計師">
+      <el-table-column width="200" prop="workName" label="作品名稱"></el-table-column>
+      <el-table-column label="設計師" width="120">
         <template scope="scope">
           {{toDesigner(scope.row.designerGuid)}}
         </template>
       </el-table-column>
-      <el-table-column
-        label="髮廊">
+      <el-table-column label="髮廊" width="150">
         <template scope="scope">
           {{toStore(scope.row.storeGuid)}}
         </template>
       </el-table-column>
-      <el-table-column
-        label="性別">
+      <el-table-column label="性別">
         <template scope="scope">
           {{toGender(scope.row.gender)}}
         </template>
       </el-table-column>
-      <el-table-column
-        prop="price"
-        label="價格">
-      </el-table-column>
+      <el-table-column prop="service_name" label="服務" width="150"></el-table-column>
+      <el-table-column prop="service_price" label="價格" width="100"></el-table-column>
       <el-table-column
         label="狀態">
         <template scope="scope">
@@ -52,12 +56,14 @@
         label="操作"
         width="100">
         <template scope="scope">
-          
           <el-button @click="onEdit(scope.row.workGuid)" type="text" size="small">编辑</el-button>
           <el-button @click="onDel(scope.row.workGuid)" type="text" size="small">刪除</el-button>
         </template>
       </el-table-column>
     </el-table>
+    <div style="margin-top: 10px"></div>
+    <el-pagination layout="prev, pager, next" :total="pagination.count" :page-size="pagination.perpage"></el-pagination>
+
 
     <!-- Modal -->
     <div ref="modal" class="modal fade">
@@ -69,28 +75,22 @@
           </div>
           <div class="modal-body">
             <el-form ref="form" :model="form" :rules="rules" label-width="120px">
-              <el-form-item label="作品圖片1">
+              <el-form-item label="正面照片">
                 <input type="file" ref="pic1">
                 <div v-if="form.pic1" style="margin-top: 20px">
                   <img :src="form.pic1" alt="">
                 </div>
               </el-form-item>
-              <el-form-item label="作品圖片2">
+              <el-form-item label="側面照片">
                 <input type="file" ref="pic2">
                 <div v-if="form.pic2" style="margin-top: 20px">
                   <img :src="form.pic2" alt="">
                 </div>
               </el-form-item>
-              <el-form-item label="作品圖片3">
+              <el-form-item label="背面照片">
                 <input type="file" ref="pic3">
                 <div v-if="form.pic3" style="margin-top: 20px">
                   <img :src="form.pic3" alt="">
-                </div>
-              </el-form-item>
-              <el-form-item label="作品圖片4">
-                <input type="file" ref="pic4">
-                <div v-if="form.pic4" style="margin-top: 20px">
-                  <img :src="form.pic4" alt="">
                 </div>
               </el-form-item>
               
@@ -98,12 +98,12 @@
                 <el-input v-model="form.workName"></el-input>
               </el-form-item>
               <el-form-item label="髮廊">
-                <el-select v-model="form.storeGuid">
+                <el-select v-model="form.storeGuid" style="width: 100%">
                   <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
                 </el-select>
               </el-form-item>
               <el-form-item label="設計師">
-                <el-select v-model="form.designerGuid">
+                <el-select v-model="form.designerGuid" style="width: 100%">
                   <el-option v-for="d in designerList" :label="d.nick" :value="d.designerGuid"></el-option>
                 </el-select>
               </el-form-item>
@@ -115,13 +115,19 @@
                 
               </el-form-item>
               <el-form-item label="髮色">
-                <el-input v-model="form.hColor"></el-input>
+                <el-select v-model="form.hColor" style="width: 100%">
+                  <el-option v-for="h in hairColorList" :value="h"></el-option>
+                </el-select>
               </el-form-item>
               <el-form-item label="髮長">
-                <el-input v-model="form.hLength"></el-input>
+                <el-select v-model="form.hLength" style="width: 100%">
+                  <el-option v-for="h in hairLenList" :value="h"></el-option>
+                </el-select>
               </el-form-item>
               <el-form-item label="風格">
-                <el-input v-model="form.style"></el-input>
+                <el-select v-model="form.style" style="width: 100%">
+                  <el-option v-for="h in hairStyleList" :value="h"></el-option>
+                </el-select>
               </el-form-item>
               <el-form-item label="性別">
                 <el-radio-group v-model="form.gender">
@@ -162,10 +168,17 @@ export default {
       workList: [],
       storeList: [],
       designerList: [],
+      hairColorList: [],
+      hairLenList: [],
+      hairStyleList: [],
       genderOpts: [
         {label: "男", value: "1"},
         {label: "女", value: "2"},
       ],
+      searchForm: {
+        storeGuid: "",
+        designerGuid: "",
+      },
       form: {
         id: "",
         storeGuid: "",
@@ -182,7 +195,6 @@ export default {
         pic1: "",
         pic2: "",
         pic3: "",
-        pic4: "",
       },
       rules: {
         workName: [
@@ -197,10 +209,17 @@ export default {
   mounted() {
     this._getStoreList()
     this._getDesignerList()
+    this._getHairColorList()
+    this._getHairLenList()
+    this._getHairStyleList()
+    this._getHairStyleList()
     this._getWorkList()
   },
   methods: {
     ...mapActions([
+      'getHairLenList',
+      'getHairStyleList',
+      'getHairColorList',
       'getStoreList',
       'getDesignerList',
       'getWorkList',
@@ -210,6 +229,27 @@ export default {
     _initWork(work) {
       return {
         ...work,
+      }
+    },
+    onSearch() {
+      this._getWorkList()
+    },
+    async _getHairStyleList() {
+      var res = await this.getHairStyleList()
+      if(res.code === 0) {
+        this.hairStyleList = res.data.style
+      }
+    },
+    async _getHairLenList() {
+      var res = await this.getHairLenList()
+      if(res.code === 0) {
+        this.hairLenList = res.data.hLength
+      }
+    },
+    async _getHairColorList() {
+      var res = await this.getHairColorList()
+      if(res.code === 0) {
+        this.hairColorList = res.data.hColor
       }
     },
     async _getStoreList() {
@@ -254,13 +294,21 @@ export default {
         pic1: "",
         pic2: "",
         pic3: "",
-        pic4: "",
       }
     },
     async _getWorkList() {
-      var res = await this.getWorkList()
+      var data = {
+        pageNo: this.pagination.page
+      }
+      var sf = this.searchForm
+      if(sf.storeGuid) data.storeGuid = sf.storeGuid
+      if(sf.designerGuid) data.designerGuid = sf.designerGuid
+
+      var res = await this.getWorkList(data)
       if(res.code === 0) {
         this.workList = res.data.workList.map(work => this._initWork(work))
+        this.pagination.page = res.data.pageNo
+        this.pagination.count = this.workList.length
       }
     },
     onDel(id) {
@@ -309,10 +357,9 @@ export default {
         f.workdate = s.workdate !== '-' && s.workdate !== '0000-00-00' ? s.workdate : ''
         f.gender = s.gender
         f.status = s.stats == 1
-        f.pic1 = s.pic1 ? `http://${this.host}${s.pic1}` : ""
-        f.pic2 = s.pic2 ? `http://${this.host}${s.pic2}` : ""
-        f.pic3 = s.pic3 ? `http://${this.host}${s.pic3}` : ""
-        f.pic4 = s.pic4 ? `http://${this.host}${s.pic4}` : ""
+        f.pic1 = s.pic1
+        f.pic2 = s.pic2
+        f.pic3 = s.pic3
         $(this.$refs.modal).modal('show')
         console.log(id)
       }
@@ -346,7 +393,6 @@ export default {
           formData.append('pic1', this.$refs.pic1.files[0])
           formData.append('pic2', this.$refs.pic2.files[0])
           formData.append('pic3', this.$refs.pic3.files[0])
-          formData.append('pic4', this.$refs.pic4.files[0])
           _.forEach(data, (v, k) => formData.append(k, v))
           var res = await this.modWork(formData)
           if(res.code === 0) {

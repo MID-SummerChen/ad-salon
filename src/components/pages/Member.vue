@@ -2,11 +2,17 @@
   <div id="member">
     <div class="page-header">
       <h1>會員管理</h1>
-      <el-button type="primary" @click="onCreate">新增會員</el-button>
+      <el-row v-if="loginInfo" :gutter="10">
+        <el-col :span="6">
+          <el-input v-model="searchForm.username" placeholder="會員帳號"></el-input>
+        </el-col>
+        <el-col :span="6">
+          <el-button type="primary" @click="onSearch">搜尋</el-button>
+          <el-button type="danger" @click="onCreate">新增會員</el-button>
+        </el-col>
+      </el-row>
     </div>
-    <el-table
-      :data="memberList"
-      style="width: 100%">
+    <el-table :data="memberList" style="width: 100%">
       <el-table-column
         label="會員帳號"
         prop="username">
@@ -46,6 +52,8 @@
         </template>
       </el-table-column>
     </el-table>
+    <div style="margin-top: 10px"></div>
+    <el-pagination layout="prev, pager, next" :total="pagination.count" :page-size="pagination.perpage"></el-pagination>
 
 
      <!-- Modal -->
@@ -133,6 +141,9 @@ export default {
     };
     return {
       memberList: [],
+      searchForm: {
+        username: ""
+      },
       form: {
         id: "",
         username: "",
@@ -193,10 +204,19 @@ export default {
         status: true,
       }
     },
+    onSearch() {
+      this._getMemberList()
+    },
     async _getMemberList() {
-      var res = await this.getMemberList()
+      var data = {
+        pageNo: this.pagination.page
+      }
+      if(this.searchForm.username) data.username = this.searchForm.username
+      var res = await this.getMemberList(data)
       if(res.code === 0) {
         this.memberList = res.data.memberList.map(member => this._initMember(member))
+        this.pagination.page = res.data.pageNo
+        this.pagination.count = this.memberList.length
       }
     },
     onDel(id) {

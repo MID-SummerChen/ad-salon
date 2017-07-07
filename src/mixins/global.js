@@ -20,7 +20,10 @@ export default {
   computed: {
     ...mapState({
       host: state => state.api.host
-    })
+    }),
+    ...mapGetters([
+      'loginInfo'
+    ])
   },
   methods: {
     toStatus(val) {

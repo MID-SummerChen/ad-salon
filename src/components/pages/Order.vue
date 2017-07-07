@@ -2,7 +2,27 @@
   <div id="order">
     <div class="page-header">
       <h1>訂單管理</h1>
-      <el-button type="primary" @click="onCreate">新增訂單</el-button>
+      <el-row :gutter="10">
+        <el-col :span="6">
+          <el-select style="width: 100%" v-model="searchForm.storeGuid">
+            <el-option label="全部店家" value=""></el-option>
+            <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
+          </el-select>
+        </el-col>
+        <el-col :span="6">
+          <el-select style="width: 100%" v-model="searchForm.memberGuid">
+            <el-option label="全部會員" value=""></el-option>
+            <el-option v-for="s in memberList" :label="s.nick" :value="s.memberGuid"></el-option>
+          </el-select>
+        </el-col>
+        <el-col :span="6">
+          <el-input v-model="searchForm.username" placeholder="會員帳號"></el-input>
+        </el-col>
+        <el-col :span="6">
+          <el-button type="primary" @click="onSearch">搜尋</el-button>
+          <el-button type="danger" @click="onCreate">新增訂單</el-button>
+        </el-col>
+      </el-row>
     </div>
     <el-table
       :data="orderList"
@@ -50,6 +70,8 @@
         </template>
       </el-table-column>
     </el-table>
+    <div style="margin-top: 10px"></div>
+    <el-pagination layout="prev, pager, next" :total="pagination.count" :page-size="pagination.perpage"></el-pagination>
 
     <!-- Modal -->
     <div ref="modal" class="modal fade">
@@ -116,6 +138,14 @@ export default {
         {label: "已核銷", value: "1"},
         {label: "未使用", value: "0"},
       ],
+      searchForm: {
+        storeGuid: "",
+        memberGuid: "",
+        username: "",
+        orderDate: "",
+        doneDate: "",
+        status: "",
+      },
       form: {
         id: "",
         memberGuid: "",
@@ -155,6 +185,9 @@ export default {
         ...order,
       }
     },
+    onSearch() {
+      this._getOrderList()
+    },
     async _getStoreList() {
       var res = await this.getStoreList()
       if(res.code === 0) {
@@ -192,9 +225,22 @@ export default {
       }
     },
     async _getOrderList() {
-      var res = await this.getOrderList()
+      var data = {
+        pageNo: this.pagination.page
+      }
+      var sf = this.searchForm
+      if(sf.storeGuid) data.storeGuid = sf.storeGuid
+      if(sf.memberGuid) data.memberGuid = sf.memberGuid
+      if(sf.username) data.username = sf.username
+      if(sf.orderDate) data.orderDate = sf.orderDate
+      if(sf.doneDate) data.doneDate = sf.doneDate
+      if(sf.status) data.stats = sf.status
+
+      var res = await this.getOrderList(data)
       if(res.code === 0) {
         this.orderList = res.data.orderList.map(store => this._initOrder(store))
+        this.pagination.page = res.data.pageNo
+        this.pagination.count = this.orderList.length
       }
     },
     onDel(id) {
