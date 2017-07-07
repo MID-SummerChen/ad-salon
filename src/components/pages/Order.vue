@@ -89,18 +89,59 @@
                 </el-select>
               </el-form-item>
               <el-form-item label="所屬店家" prop="storeGuid">
-                <el-select v-model="form.storeGuid">
+                <el-select v-model="form.storeGuid" @change="_getDesignerList() && _getPriceList()">
                   <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
                 </el-select>
               </el-form-item>
-              <el-form-item label="金額" prop="gold">
-                <el-input v-model="form.gold"></el-input>
+              <el-form-item label="設計師" prop="designerGuid">
+                <el-select v-model="form.designerGuid" :disabled="!form.storeGuid">
+                  <el-option v-for="d in designerList" :label="d.nick" :value="d.designerGuid"></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="服務項目" prop="priceGuid">
+                <el-select v-model="form.priceGuid" :disabled="!form.storeGuid" @change="onSelectedPrice">
+                  <el-option v-for="p in priceList" :label="p.name" :value="p.priceGuid"></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item v-if="form.priceGuid" label="金額" prop="gold">
+                {{form.gold}}
+                <!--<el-input v-model="form.gold"></el-input>-->
+              </el-form-item>
+              <el-form-item v-if="form.priceGuid" label="所需時間" prop="gold">
+                {{form.neededTime}} /hr
+              </el-form-item>
+              <el-form-item label="預約時間" prop="bookDate">
+                <el-row :gutter="10">
+                  <!--<el-col :span="10"><el-date-picker v-model="form.bookDate" type="date" style="width: 100%"></el-date-picker></el-col>
+                  <el-col :span="10"><el-time-select v-model="form.startTime" :picker-options="timeSelectCfg" style="width: 100%"></el-time-select></el-col>-->
+                  <el-col :span="8">
+                    <el-select v-model="form.bookDate" style="width: 100%" @change="form.startTime = ''">
+                      <el-option v-for="d in datesOfWeek" :value="d.date"></el-option>
+                    </el-select>
+                  </el-col>
+                  <el-col :span="8">
+                    <el-select v-model="form.startTime" style="width: 100%" @change="onSelectedStartTime">
+                      <el-option v-for="t in timesOfDate" :value="t.time"></el-option>
+                    </el-select>
+                  </el-col>
+                  <!--<el-col :span="4">
+                    {{form.endTime}} <br>
+                  </el-col>-->
+                  <el-col :span="24"><p v-if="overTime > 0.5" class="text-danger">所需作業時間超過服務時間範圍，請重新選擇時間！</p></el-col>
+                </el-row>
+                <!--{{form}}-->
+              </el-form-item>
+              <el-form-item label="有VIP卡" prop="vip">
+                <el-checkbox v-model="form.vip" :true-value="1" :false-value="0"></el-checkbox>
+                <!--<el-date-picker v-model="form.orderDate" type="date"></el-date-picker>-->
               </el-form-item>
               <el-form-item label="訂購日期" prop="orderDate">
-                <el-date-picker v-model="form.orderDate" type="date"></el-date-picker>
+                {{form.orderDate}}
+                <!--<el-date-picker v-model="form.orderDate" type="date"></el-date-picker>-->
               </el-form-item>
               <el-form-item label="註銷日期" prop="doneDate">
-                <el-date-picker v-model="form.doneDate" type="date"></el-date-picker>
+                {{form.doneDate}}
+                <!--<el-date-picker v-model="form.doneDate" type="date"></el-date-picker>-->
               </el-form-item>
               <el-form-item label="狀態">
                 <el-radio-group v-model="form.status">
@@ -134,6 +175,14 @@ export default {
       orderList: [],
       memberList: [],
       storeList: [],
+      designerList: [],
+      priceList: [],
+      datesOfWeek: [],
+      timeSelectCfg: {
+        start: '09:00',
+        step: '00:30',
+        end: '20:30'
+      },
       statusOpts: [
         {label: "已核銷", value: "1"},
         {label: "未使用", value: "0"},
@@ -150,10 +199,18 @@ export default {
         id: "",
         memberGuid: "",
         storeGuid: "",
+        designerGuid: "",
+        priceGuid: "",
+        neededTime: "",
         gold: "",
+        bookDate: "",
+        startTime: "",
+        endTime: "",
+        vip: 0,
         orderDate: "",
         doneDate: "",
         status: "0",
+        weekType: 1,
       },
       rules: {
         storeGuid: [
@@ -162,9 +219,9 @@ export default {
         memberGuid: [
           { required: true, message: '不可為空'}
         ],
-        orderDate: [
-          { required: true, message: '不可為空'}
-        ],
+        // orderDate: [
+        //   { required: true, message: '不可為空'}
+        // ],
       }
     }
   },
@@ -172,10 +229,31 @@ export default {
     this._getStoreList()
     this._getMemberList()
     this._getOrderList()
+    
+  },
+  computed: {
+    timesOfDate() {
+      var i = _.findIndex(this.datesOfWeek, {date: this.form.bookDate})
+      return i > -1 ? this.datesOfWeek[i].timeArr : []
+    },
+    overTime() {
+      if(this.form.endTime) {
+        var _etArr = this.form.endTime.split(":")
+        var et = moment(this.form.bookDate).set('hour', _etArr[0]).set('minute', _etArr[1])
+        var _ltArr = _.last(this.timesOfDate).time.split(":")
+        var lt = moment(this.form.bookDate).set('hour', _ltArr[0]).set('minute', _ltArr[1])
+        return (et - lt) / 1000 / 60 / 60
+      }
+      return ""
+    }
   },
   methods: {
     ...mapActions([
+      'getTimeTable',
+      'bookAvailableTime',
       'getStoreList',
+      'getPriceList',
+      'getDesignerList',
       'getMemberList',
       'getOrderList',
       'modOrder',
@@ -188,10 +266,58 @@ export default {
     onSearch() {
       this._getOrderList()
     },
+    onSelectedStartTime() {
+      if(this.form.startTime) {
+        var _t = this.form.startTime.split(":")
+        this.form.endTime = moment(this.form.bookDate).set('hour', _t[0]).set('minute', _t[1]).add(this.form.neededTime-0, 'hour').format("HH:mm")
+        // console.log(moment().set('hour', 12).set('minute', 30).add(1, 'h').format('HH:mm'))
+      }
+    },
+    onSelectedPrice() {
+      var i = _.findIndex(this.priceList, {priceGuid: this.form.priceGuid})
+      if(i > -1) {
+        this.form.gold = this.priceList[i].price
+        this.form.neededTime = this.priceList[i].neededTime
+        this._getTimeTable()
+      }
+    },
+    async _getTimeTable() {
+      var data1 ={
+        designerGuid: this.form.designerGuid,
+        searchDate: moment().add(1, 'd').format("YYYY-MM-DD")
+      }
+      var data2 ={
+        designerGuid: this.form.designerGuid,
+        searchDate: moment().add(9, 'd').format("YYYY-MM-DD")
+      }
+      var res1 = await this.getTimeTable(data1)
+      var res2 = await this.getTimeTable(data2)
+      if(res1.code === 0 && res2.code === 0) {
+        this.datesOfWeek = _.concat(res1.data.timeTable, res2.data.timeTable)
+      }
+    },
     async _getStoreList() {
       var res = await this.getStoreList()
       if(res.code === 0) {
         this.storeList = res.data.storeList
+      }
+    },
+    async _getDesignerList() {
+      var data = {
+        storeGuid: this.form.storeGuid
+      }
+      var res = await this.getDesignerList(data)
+      if(res.code === 0) {
+        this.designerList = res.data.designerList
+      }
+    },
+    async _getPriceList() {
+      var data = {
+        storeGuid: this.form.storeGuid
+      }
+      var res = await this.getPriceList(data)
+      if(res.code === 0) {
+        this.priceList = res.data.priceList
       }
     },
     async _getMemberList() {
@@ -218,10 +344,18 @@ export default {
         id: "",
         memberGuid: "",
         storeGuid: "",
+        designerGuid: "",
+        priceGuid: "",
+        neededTime: "",
         gold: "",
+        bookDate: "",
+        startTime: "",
+        endTime: "",
+        vip: 0,
         orderDate: "",
         doneDate: "",
         status: "0",
+        weekType: 1
       }
     },
     async _getOrderList() {
@@ -250,7 +384,7 @@ export default {
         type: 'warning'
       }).then(async () => {
         var data = {
-          storeGuid: id,
+          orderGuid: id,
           del: 1
         }
         var res = await this.modOrder(data)
@@ -301,9 +435,15 @@ export default {
             orderGuid: f.id || -1,
             storeGuid: f.storeGuid,
             memberGuid: f.memberGuid,
-            orderDate: moment(f.orderDate).format('YYYY-MM-DD'),
-            doneDate: f.doneDate ? moment(f.doneDate).format('YYYY-MM-DD') : "",
-            gold: f.gold,
+            designerGuid: f.designerGuid,
+            priceGuid: f.priceGuid,
+            bookDate: f.bookDate,
+            startTime: f.startTime,
+            endTime: f.endTime,
+            // orderDate: moment(f.orderDate).format('YYYY-MM-DD'),
+            // doneDate: f.doneDate ? moment(f.doneDate).format('YYYY-MM-DD') : "",
+            // gold: f.gold,
+            vips: f.vip,
             stats: f.status,
           }
 

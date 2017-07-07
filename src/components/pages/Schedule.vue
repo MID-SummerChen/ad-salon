@@ -26,6 +26,7 @@
         </el-col>
       </el-row>
     </div>
+
     <template v-if="datesOfWeek.length > 0">
       <el-button type="primary" @click="onSubmit">送出班表</el-button>
       <el-button type="danger" @click="avaliableTime = []">重設</el-button>
@@ -57,7 +58,7 @@ export default {
   data() {
     var leftTimes = []
     var st_t = moment().set('hour', 9).set('minute', 0)
-    var ed_t = moment().set('hour', 9).set('minute', 0).add(11, 'hours')
+    var ed_t = moment().set('hour', 9).set('minute', 0).add(13, 'hours')
     pushTime()
     function pushTime () {
       if(ed_t > st_t) {
@@ -86,6 +87,7 @@ export default {
       designerList: [],
       designerGuid: "",
       currentWeek: 1,
+      _avaliableTime: [],
       avaliableTime: [],
       searchForm: {
         storeGuid: "",
@@ -101,9 +103,6 @@ export default {
   computed: {
     ...mapGetters([
     ]),
-    orderedAvaliableTime() {
-      return _.orderBy(this.avaliableTime, ['date', 'time'], ['asc', 'asc']);
-    }
   },
   filters: {
     date(val) {
@@ -151,17 +150,30 @@ export default {
       var res = await this.getTimeTable(data)
       if(res.code === 0) {
         this.datesOfWeek = _.map(res.data.timeTable, "date")
+        this._avaliableTime = []
+        _.each(res.data.timeTable, d => {
+          this._avaliableTime = this._avaliableTime.concat(_.map(d.timeArr, t => ({date: d.date, time: t.time})))
+        })
+        this.avaliableTime = _.clone(this._avaliableTime)
+        // console.log(this.avaliableTime)
       }
     },
     async onSubmit() {
+      var times = _.clone(this.avaliableTime)
+      _.each(this._avaliableTime, dt => {
+        var i = _.findIndex(times, dt)
+        if(i === -1) {
+          times.push(_.extend(dt, {del: 1}))
+        }
+      })
       var data = {
         designerGuid: this.searchForm.designerGuid,
-        avaliableTime: this.orderedAvaliableTime
+        avaliableTime: JSON.stringify(_.orderBy(times, ['date', 'time']))
       }
       console.log(data)
       var res = await this.addAvailableTime(data)
       if(res.code === 0) {
-
+        
       }
 
     }
