@@ -117,10 +117,10 @@ export default {
   },
   mounted() {
     if(this.loginInfo) {
-      this.getEditData(this.loginInfo.type)
+      this.getEditData(this.loginInfo.acc)
     }else {
       setTimeout(() => {
-        this.getEditData(this.loginInfo.type)
+        this.getEditData(this.loginInfo.acc)
       }, 200)
     }
     

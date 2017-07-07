@@ -2,7 +2,15 @@
   <div id="store">
     <div class="page-header">
       <h1>店家管理</h1>
-      <el-button type="primary" @click="onCreate">新增店家</el-button>
+      <el-row :gutter="10">
+        <el-col :span="6"><el-input v-model="searchForm.storeName" placeholder="店家名稱"></el-input></el-col>
+        <el-col :span="6"><el-input v-model="searchForm.storeAcc" placeholder="店家編號"></el-input></el-col>
+        <el-col :span="6"><el-input v-model="searchForm.stoerAddr" placeholder="店家地址"></el-input></el-col>
+        <el-col :span="6">
+          <el-button type="primary" @click="onSearch">搜尋</el-button>
+          <el-button type="danger" @click="onCreate">新增店家</el-button>
+        </el-col>
+      </el-row>
     </div>
     <el-table
       :data="storeList"
@@ -137,6 +145,11 @@ export default {
       pkgList: [],
       storeList: [],
       dates: ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'],
+      searchForm: {
+        storeName: "",
+        storeAcc: "",
+        stoerAddr: "",
+      },
       form: {
         id: "",
         noid: "",
@@ -182,6 +195,9 @@ export default {
         ...store,
       }
     },
+    async onSearch() {
+      this._getStoreList()
+    },
     clearForm() {
       this.$refs.form.resetFields()
       this.form = Object.assign({}, this.form, {
@@ -217,7 +233,14 @@ export default {
       }
     },
     async _getStoreList() {
-      var res = await this.getStoreList()
+      var data = {
+        pageNo: this.pagination.page
+      }
+      var sf = this.searchForm
+      if(sf.storeName) data.name_mask = sf.storeName
+      if(sf.storeAcc) data.noid_mask = sf.storeAcc
+      if(sf.stoerAddr) data.address_mask = sf.stoerAddr
+      var res = await this.getStoreList(data)
       if(res.code === 0) {
         this.storeList = res.data.storeList.map(store => this._initStore(store))
         this.pagination.page = res.data.pageNo

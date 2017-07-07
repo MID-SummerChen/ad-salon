@@ -2,7 +2,18 @@
   <div id="designer">
     <div class="page-header">
       <h1>設計師管理</h1>
-      <el-button type="primary" @click="onCreate">新增設計師</el-button>
+      <el-row :gutter="10">
+        <el-col :span="6">
+          <el-select style="width: 100%" v-model="searchForm.storeGuid">
+            <el-option label="全部" value=""></el-option>
+            <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
+          </el-select>
+        </el-col>
+        <el-col :span="6">
+          <el-button type="primary" @click="onSearch">搜尋</el-button>
+          <el-button type="danger" @click="onCreate">新增設計師</el-button>
+        </el-col>
+      </el-row>
     </div>
     <el-table
       :data="designerList"
@@ -22,8 +33,16 @@
         prop="nick">
       </el-table-column>
       <el-table-column
-        label="性別"
-        prop="gender">
+        label="作品數"
+        prop="workNum">
+      </el-table-column>
+      <el-table-column
+        label="成交(總)"
+        prop="orderDone">
+      </el-table-column>
+      <el-table-column
+        label="成交(月)"
+        prop="orderDoneMon">
       </el-table-column>
 
       <el-table-column
@@ -42,6 +61,8 @@
         </template>
       </el-table-column>
     </el-table>
+    <div style="margin-top: 10px"></div>
+    <el-pagination layout="prev, pager, next" :total="pagination.count" :page-size="pagination.perpage"></el-pagination>
 
      <!-- Modal -->
     <div ref="modal" class="modal fade">
@@ -82,8 +103,8 @@
               </el-form-item>
               <el-form-item label="性別" prop="gender">
                 <el-radio-group v-model="form.gender">
-                  <el-radio label="1">男</el-radio>
-                  <el-radio label="2">女</el-radio>
+                  <el-radio :label="1">男</el-radio>
+                  <el-radio :label="2">女</el-radio>
                 </el-radio-group>
               </el-form-item>
               
@@ -138,6 +159,9 @@ export default {
     return {
       designerList: [],
       storeList: [],
+      searchForm: {
+        storeGuid: ""
+      },
       form: {
         id: "",
         username: "",
@@ -187,6 +211,9 @@ export default {
         ...designer
       }
     },
+    async onSearch() {
+      this._getDesignerList()
+    },
     toStore(id) {
       var i = this.storeList.findIndex(store => store.storeGuid === id)
       return i > -1 ? this.storeList[i].storeName : ''
@@ -215,9 +242,16 @@ export default {
       }
     },
     async _getDesignerList() {
-      var res = await this.getDesignerList()
+      var data = {
+        pageNo: this.pagination.page
+      }
+      if(this.searchForm.storeGuid) data.storeGuid = this.searchForm.storeGuid
+
+      var res = await this.getDesignerList(data)
       if(res.code === 0) {
         this.designerList = res.data.designerList.map(designer => this._initDesigner(designer))
+        this.pagination.page = res.data.pageNo
+        this.pagination.count = this.designerList.length
       }
     },
     onDel(id) {
