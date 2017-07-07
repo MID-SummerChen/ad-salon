@@ -9,8 +9,8 @@ import ElementUI from 'element-ui'
 
 export default {
   state: {
-    host: "adsalon.v6.zmtuaa.com", 
-    path: "api/adsalon",
+    host: "www.tommydawu.com", 
+    path: "adsalon/api/adsalon",
     apiVersion: "v1",
     isLoading: false,
     loadingApis: []
@@ -32,6 +32,12 @@ export default {
   },
   actions: {
     handleError,
+
+    userLogin: async (store, data) => await apiInit(store, "POST", "form", `userLogin.php`, data),
+    checkLogin: async (store, data) => await apiInit(store, "POST", "form", `chkLogin.php`, data),
+    getPriceList: async (store, data) => await apiInit(store, "POST", "form", `getPriceList.php`, data),
+    modPrice: async (store, data) => await apiInit(store, "POST", "multi", `modPrice.php`, data),
+    delPrice: async (store, data) => await apiInit(store, "POST", "form", `modPrice.php`, _.extend(data, {del: 1})),
     getOrderList: async (store, data) => await apiInit(store, "POST", "form", `getOrderList.php`, data),
     modOrder: async (store, data) => await apiInit(store, "POST", "form", `modOrder.php`, data),
     getWorkList: async (store, data) => await apiInit(store, "POST", "form", `getWorkList.php`, data),
@@ -44,6 +50,11 @@ export default {
     modAdv: async (store, data) => await apiInit(store, "POST", "form", `modAdv.php`, data),
     getDesignerList: async (store, data) => await apiInit(store, "POST", "form", `getDesignerList.php`, data),
     modDesigner: async (store, data) => await apiInit(store, "POST", "form", `modDesigner.php`, data),
+    getCityList: async (store, data) => await apiInit(store, "POST", "form", `getCity.php`, data),
+    getPackageList: async (store, data) => await apiInit(store, "POST", "form", `getPackage.php`, data),
+    getTimeTable: async (store, data) => await apiInit(store, "POST", "form", `getTimeTable.php`, data),
+    bookAvailableTime: async (store, data) => await apiInit(store, "POST", "form", `bookAvailableTime.php`, data),
+    addAvailableTime: async (store, data) => await apiInit(store, "POST", "form", `addAvailableTime.php`, data),
   }
 }
 

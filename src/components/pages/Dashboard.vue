@@ -24,9 +24,10 @@
         </div>-->
       </div>
     </nav>
-    <div class="app-sidebar" :class="{'active': sidebarShow}">
+    <div v-if="loginInfo" class="app-sidebar" :class="{'active': sidebarShow}">
       <el-menu default-active="2" class="el-menu-vertical-demo" :router="true" @open="handleOpen" @close="handleClose">
           <el-menu-item index="/home"><i class="el-icon-menu"></i>首頁</el-menu-item>
+          <el-menu-item v-if="loginInfo.type === 2" index="/basic"><i class="el-icon-menu"></i>基本設定</el-menu-item>
           <el-menu-item index="/ad"><i class="el-icon-menu"></i>廣告管理</el-menu-item>
           <el-menu-item index="/store"><i class="el-icon-menu"></i>店家管理</el-menu-item>
           <el-menu-item index="/designer"><i class="el-icon-menu"></i>設計師管理</el-menu-item>
@@ -57,13 +58,17 @@ export default {
     }
   },
   mounted() {
+    this.GET_LOGIN_INFO()
 
   },
   computed: {
-
+    ...mapGetters([
+      'loginInfo'
+    ])
   },
   methods: {
-    ...mapActions([
+    ...mapMutations([
+      'GET_LOGIN_INFO'
     ]),
   }
 }

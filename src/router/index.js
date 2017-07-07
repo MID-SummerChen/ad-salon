@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Home from '@/components/pages/Home'
 import Member from '@/components/pages/Member'
 import Store from '@/components/pages/Store'
+import Basic from '@/components/pages/Basic'
 import Ad from '@/components/pages/Ad'
 import Designer from '@/components/pages/Designer'
 import Permission from '@/components/pages/Permission'
@@ -29,6 +30,11 @@ export default new Router({
           path: '/home',
           name: 'Home',
           component: Home
+        },
+        {
+          path: '/basic',
+          name: 'Basic',
+          component: Basic
         },
         {
           path: '/store',

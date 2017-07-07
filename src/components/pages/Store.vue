@@ -8,24 +8,20 @@
       :data="storeList"
       style="width: 100%">
       <el-table-column
+        prop="noid"
+        label="店家編號">
+      </el-table-column>
+      <el-table-column
         prop="storeName"
         label="店家名稱">
       </el-table-column>
       <el-table-column
-        prop="mobile"
-        label="聯絡電話">
-      </el-table-column>
-      <el-table-column
-        prop="contact"
-        label="負責人">
-      </el-table-column>
-      <el-table-column
-        prop="work"
-        label="作品">
-      </el-table-column>
-      <el-table-column
         prop="designer"
         label="設計師">
+      </el-table-column>
+      <el-table-column
+        prop="commision"
+        label="紅利累計">
       </el-table-column>
       <el-table-column
         label="狀態">
@@ -44,6 +40,8 @@
         </template>
       </el-table-column>
     </el-table>
+    <div style="margin-top: 10px"></div>
+    <el-pagination layout="prev, pager, next" :total="pagination.count" :page-size="pagination.perpage"></el-pagination>
 
     <!-- Modal -->
     <div ref="modal" class="modal fade">
@@ -62,13 +60,27 @@
                 </div>
               </el-form-item>
               <el-form-item label="店家編號" prop="noid">
-                <el-input v-model="form.noid"></el-input>
+                <el-input v-model="form.noid" :disabled="true"></el-input>
               </el-form-item>
               <el-form-item label="店家名稱" prop="storeName">
                 <el-input v-model="form.storeName"></el-input>
               </el-form-item>
+              <el-form-item label="店家簡述" prop="intro">
+                <el-input v-model="form.intro"></el-input>
+              </el-form-item>
+              <el-form-item label="詳細介紹" prop="descr">
+                <el-input v-model="form.descr"></el-input>
+              </el-form-item>
+              <el-form-item label="密碼" prop="pwd">
+                <el-input v-model="form.pwd"></el-input>
+              </el-form-item>
               <el-form-item label="電話">
                 <el-input v-model="form.phone"></el-input>
+              </el-form-item>
+              <el-form-item label="城市">
+                <el-select v-model="form.city">
+                  <el-option v-for="(c, i) in cityList" :label="c" :value="i"></el-option>
+                </el-select>
               </el-form-item>
               <el-form-item label="地址">
                 <el-input v-model="form.addr"></el-input>
@@ -81,6 +93,17 @@
               </el-form-item>
               <el-form-item label="負責人手機">
                 <el-input v-model="form.mobile"></el-input>
+              </el-form-item>
+              <el-form-item label="方案">
+                <el-select v-model="form.package">
+                  <el-option v-for="(pkg, i) in pkgList" :label="pkg" :value="pkg"></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="公休日">
+                <el-checkbox v-for="(d, i) in dates" v-model="form.restDates[i]" :true-label="1" :false-label="0">{{d}}</el-checkbox>
+              </el-form-item>
+              <el-form-item label="VIP卡">
+                <el-switch v-model="form.vip" on-text="" off-text=""/>
               </el-form-item>
               
               <el-form-item label="狀態">
@@ -110,12 +133,20 @@ export default {
   mixins: [globalMixin],
   data() {
     return {
+      cityList: [],
+      pkgList: [],
       storeList: [],
+      dates: ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'],
       form: {
         id: "",
         noid: "",
+        pwd: "",
+        package: "",
         storeName: "",
+        intro: "",
+        descr: "",
         phone: "",
+        city: "",
         addr: "",
         openTime: "",
         mobile: "",
@@ -123,22 +154,25 @@ export default {
         mobile: "",
         status: true,
         imgSrc: "",
+        vip: false,
+        restDates: [0,0,0,0,0,0,0],
       },
       rules: {
         storeName: [
-          { required: true, message: '不可為空'}
-        ],
-        noid: [
           { required: true, message: '不可為空'}
         ],
       }
     }
   },
   mounted() {
+    this._getCityList()
+    this._getPackageList()
     this._getStoreList()
   },
   methods: {
     ...mapActions([
+      'getCityList',
+      'getPackageList',
       'getStoreList',
       'modStore',
       'uploadStorePic',
@@ -150,23 +184,44 @@ export default {
     },
     clearForm() {
       this.$refs.form.resetFields()
-      this.form = {
+      this.form = Object.assign({}, this.form, {
         id: "",
         noid: "",
+        pwd: "",
+        package: "",
         storeName: "",
+        intro: "",
+        descr: "",
         phone: "",
+        city: "",
         addr: "",
         openTime: "",
         contact: "",
         mobile: "",
         status: true,
         imgSrc: "",
+        vip: false,
+        restDates: [0,0,0,0,0,0,0],
+      })
+    },
+    async _getCityList() {
+      var res = await this.getCityList()
+      if(res.code === 0) {
+        this.cityList = res.data.city
+      }
+    },
+    async _getPackageList() {
+      var res = await this.getPackageList()
+      if(res.code === 0) {
+        this.pkgList = res.data.package
       }
     },
     async _getStoreList() {
       var res = await this.getStoreList()
       if(res.code === 0) {
         this.storeList = res.data.storeList.map(store => this._initStore(store))
+        this.pagination.page = res.data.pageNo
+        this.pagination.count = this.storeList.length
       }
     },
     onDel(id) {
@@ -205,13 +260,21 @@ export default {
         f.id = id
         f.noid = s.noid
         f.storeName = s.storeName
+        f.intro = s.intro
+        f.descr = s.descr
         f.phone = s.phone
+        f.package = s.package
+        f.city = s.city-0
         f.addr = s.address
         f.openTime = s.openTime
         f.contact = s.contact
         f.mobile = s.mobile
         f.status = s.stats == 1
         f.imgSrc = s.pic ? `http://${this.host}${s.pic}` : ""
+        f.restDates = _(s.rests).toArray().map(v => v-0).value()
+        console.log(f.restDates)
+        f.vip = f.vip - 0
+
         $(this.$refs.modal).modal('show')
         console.log(id)
       }
@@ -228,14 +291,20 @@ export default {
           var f = this.form
           var data = {
             storeGuid: f.id || -1,
-            noid: f.noid,
+            pwd: f.pwd,
             storeName: f.storeName,
+            intro: f.intro,
+            descr: f.descr,
             phone: f.phone,
+            city: f.city,
             address: f.addr,
+            package: f.package,
             openTime: f.openTime,
             contact: f.contact,
             mobile: f.mobile,
             stats: f.status ? 1 : 2,
+            rests: f.restDates.toString().replace(/\,/g, ''),
+            vips: f.vip ? 1 : 0
           }
 
           var formData = new FormData()

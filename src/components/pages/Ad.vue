@@ -15,7 +15,7 @@
         width="200"
         label="圖片">
         <template scope="scope">
-          <img v-if="scope.row.pic" :src="'http://' + host + scope.row.pic" alt="">
+          <img v-if="scope.row.pic" :src="scope.row.pic" alt="">
         </template>
       </el-table-column>
       <el-table-column
@@ -147,7 +147,11 @@ export default {
       }
     },
     async _getAdvList() {
-      var res = await this.getAdvList()
+      var data = {
+        pageNo: this.pagination.page,
+        storeGuid: "ST0024"
+      }
+      var res = await this.getAdvList(data)
       if(res.code === 0) {
         this.advList = res.data.advList.map(adv => this._initAdv(adv))
       }
@@ -190,7 +194,7 @@ export default {
         f.sDate = s.sDate
         f.eDate = s.eDate
         f.status = s.stats == 1
-        f.imgSrc = s.pic ? `http://${this.host}${s.pic}` : ""
+        f.imgSrc = s.pic
         $(this.$refs.modal).modal('show')
         console.log(id)
       }

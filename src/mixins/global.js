@@ -10,6 +10,11 @@ export default {
         {label: "男", value: 1},
         {label: "女", value: 2},
       ],
+      pagination: {
+        page: 1,
+        perpage: 50,
+        count: 0
+      }
     }
   },
   computed: {
@@ -26,5 +31,11 @@ export default {
       var i = _.findIndex(this.genderOpts, {value: gender-0})
       return i > -1 ? this.genderOpts[i].label : '其他'
     },
+    setStorage(storageName, data) {
+      sessionStorage.setItem(storageName, JSON.stringify(data))
+    },
+    getStorage(storageName) {
+      return JSON.parse(sessionStorage.getItem(storageName))
+    }
   }
 }
