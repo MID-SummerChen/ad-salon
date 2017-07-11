@@ -22,7 +22,8 @@ export default {
       host: state => state.api.host
     }),
     ...mapGetters([
-      'loginInfo'
+      'loginInfo',
+      'storeInfo'
     ])
   },
   methods: {

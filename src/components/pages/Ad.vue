@@ -2,15 +2,15 @@
   <div id="adv">
     <div class="page-header">
       <h1>廣告管理</h1>
-      <el-row v-if="loginInfo" :gutter="10">
-        <el-col :span="6">
+      <el-row :gutter="10">
+        <el-col v-if="loginInfo.type === 1" :span="6">
           <el-select style="width: 100%" v-model="searchForm.storeGuid">
             <el-option label="總管理後台" value=""></el-option>
             <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
           </el-select>
         </el-col>
         <el-col :span="6">
-          <el-button type="primary" @click="onSearch">搜尋</el-button>
+          <el-button v-if="loginInfo.type === 1" type="primary" @click="onSearch">搜尋</el-button>
           <el-button type="danger" @click="onCreate">新增廣告</el-button>
           <!--<el-button v-if="loginInfo.type === 1 || advList.length < 3" type="danger" @click="onCreate">新增廣告</el-button>-->
         </el-col>
@@ -59,7 +59,7 @@
                   <img :src="form.imgSrc" alt="">
                 </div>
               </el-form-item>
-              <el-form-item label="廣告目標" prop="storeGuid">
+              <el-form-item v-if="loginInfo.type === 1" label="廣告目標" prop="storeGuid">
                 <el-select v-model="form.storeGuid" style="width: 100%">
                   <el-option label="總管理後台" value=""></el-option>
                   <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
@@ -127,12 +127,16 @@ export default {
     }
   },
   mounted() {
-    this._getStoreList()
-    this._getAdvList()
+    if(this.loginInfo.type === 1) {
+      this._getStoreList()
+      this._getAdvList()
+    }else {
+     this._getStoreAdvList() 
+    }
+    
 
   },
   computed: {
-    
   },
   methods: {
     ...mapActions([
@@ -147,6 +151,7 @@ export default {
     },
     clearForm() {
       this.$refs.form.resetFields()
+      this.$refs.fileSelector.value = ""
       this.form = {
         id: "",
         storeGuid: "",
@@ -184,6 +189,19 @@ export default {
         this.pagination.count = this.advList.length
       }
     },
+    async _getStoreAdvList() {
+      var data = {
+        pageNo: this.pagination.page,
+        storeGuid: this.storeInfo.storeGuid,
+      }
+
+      var res = await this.getAdvList(data)
+      if(res.code === 0) {
+        this.advList = res.data.advList.map(adv => this._initAdv(adv))
+        this.pagination.page = res.data.pageNo
+        this.pagination.count = this.advList.length
+      }
+    },
     onDel(id) {
       this.$confirm('是否確定刪除？', '提示', {
         confirmButtonText: '確認刪除',
@@ -200,7 +218,11 @@ export default {
             type: 'success',
             message: '删除成功!'
           });
-          this._getAdvList()
+          if(this.loginType === 1) {
+            this._getAdvList()
+          }else {
+            this._getStoreAdvList()
+          }
         }
         
       }).catch(() => {
@@ -247,13 +269,21 @@ export default {
             eDate: moment(f.eDate).format('YYYY-MM-DD'),
             stats: f.status ? 1 : 2,
           }
+          if(this.loginType !== 1) {
+            data.storeGuid = this.storeInfo.storeGuid
+          }
 
           var formData = new FormData()
           formData.append('pic', this.$refs.fileSelector.files[0])
           _.forEach(data, (v, k) => formData.append(k, v))
           var res = await this.modAdv(formData)
           if(res.code === 0) {
-            this._getAdvList()
+            
+            if(this.loginType === 1) {
+              this._getAdvList()
+            }else {
+              this._getStoreAdvList()
+            }
             $(this.$refs.modal).modal('hide')
             this.$message({
               type: 'success',

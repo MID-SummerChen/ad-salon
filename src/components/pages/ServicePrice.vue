@@ -167,16 +167,12 @@ export default {
   watch: {
   },
   computed: {
-    ...mapGetters([
-      'loginInfo',
-      'storeInfo',
-    ])
   },
   mounted() {
     if(this.loginInfo.type === 1) {
       this._getStoreList()
       this._getPriceList()
-    }else if(this.loginInfo.type === 2){
+    }else{
       this._getSelfPriceList()
     }
     
@@ -267,7 +263,11 @@ export default {
             type: 'success',
             message: '删除成功!'
           });
-          this._getPriceList()
+          if(this.loginInfo.type === 1) {
+            this._getPriceList()
+          }else {
+            this._getSelfPriceList()
+          }
         }
         
       }).catch(() => {
@@ -323,7 +323,7 @@ export default {
             sdate: moment(f.startDate).startOf('day').format("YYYY-MM-DD HH:mm"),
             edate: moment(f.endDate).endOf('day').format("YYYY-MM-DD HH:mm"),
           }
-          if(this.loginInfo.type === 2) {
+          if(this.loginInfo.type !== 1) {
             data.storeGuid = this.storeInfo.storeGuid
           }
 

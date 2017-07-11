@@ -120,13 +120,7 @@ export default {
     }
   },
   mounted() {
-    if(this.loginInfo) {
-      this.getEditData(this.loginInfo.acc)
-    }else {
-      setTimeout(() => {
-        this.getEditData(this.loginInfo.acc)
-      }, 200)
-    }
+    this.getEditData()
     
   },
   methods: {
@@ -135,10 +129,10 @@ export default {
       'onCheckLogin',
       'uploadStorePic',
     ]),
-    async getEditData(id) {
+    async getEditData() {
       var s = this.storeInfo
       var f = this.form
-      f.id = id
+      f.id = this.loginInfo.acc
       f.noid = s.noid
       f.storeName = s.storeName
       f.intro = s.intro
@@ -157,7 +151,6 @@ export default {
       f.vip = f.vip - 0
 
       $(this.$refs.modal).modal('show')
-      console.log(id)
       
     },
     async onSubmit() {
