@@ -4,19 +4,19 @@
       <h1>價目表管理</h1>
       <el-row :gutter="10">
         <el-col :span="6">
-          <el-select style="width: 100%" v-model="searchForm.storeGuid">
+          <el-select v-if="loginInfo.type === 1" style="width: 100%" v-model="searchForm.storeGuid">
             <el-option label="全部店家" value=""></el-option>
             <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
           </el-select>
         </el-col>
         <el-col :span="6">
-          <el-button type="primary" @click="onSearch">搜尋</el-button>
+          <el-button v-if="loginInfo.type === 1" type="primary" @click="onSearch">搜尋</el-button>
           <el-button type="danger" @click="onCreate">新增項目</el-button>
         </el-col>
       </el-row>
     </div>
     <el-table :data="priceList" style="width: 100%">
-      <el-table-column label="髮廊" width="150">
+      <el-table-column v-if="loginInfo.type === 1" label="髮廊" width="150">
         <template scope="scope">
           {{toStore(scope.row.storeGuid)}}
         </template>
@@ -61,7 +61,7 @@
                   <img :src="form.imgSrc" alt="">
                 </div>
               </el-form-item>
-              <el-form-item label="髮廊" prop="storeGuid">
+              <el-form-item v-if="loginInfo.type === 1" label="髮廊" prop="storeGuid">
                 <el-select v-model="form.storeGuid" style="width: 100%">
                   <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
                 </el-select>
@@ -168,12 +168,19 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'loginInfo'
+      'loginInfo',
+      'storeInfo',
     ])
   },
   mounted() {
-    this._getStoreList()
-    this._getPriceList()
+    if(this.loginInfo.type === 1) {
+      this._getStoreList()
+      this._getPriceList()
+    }else if(this.loginInfo.type === 2){
+      this._getSelfPriceList()
+    }
+    
+    
   },
   methods: {
     ...mapActions([
@@ -226,6 +233,18 @@ export default {
       var sf = this.searchForm
       if(sf.storeGuid) data.storeGuid = sf.storeGuid
 
+      var res = await this.getPriceList(data)
+      if(res.code === 0) {
+        this.priceList = res.data.priceList.map(price => this._initPrice(price))
+        this.pagination.page = res.data.pageNo
+        this.pagination.count = this.priceList.length
+      }
+    },
+    async _getSelfPriceList() {
+      var data = {
+        pageNo: this.pagination.page,
+        storeGuid: this.storeInfo.storeGuid
+      }
       var res = await this.getPriceList(data)
       if(res.code === 0) {
         this.priceList = res.data.priceList.map(price => this._initPrice(price))
@@ -304,13 +323,21 @@ export default {
             sdate: moment(f.startDate).startOf('day').format("YYYY-MM-DD HH:mm"),
             edate: moment(f.endDate).endOf('day').format("YYYY-MM-DD HH:mm"),
           }
+          if(this.loginInfo.type === 2) {
+            data.storeGuid = this.storeInfo.storeGuid
+          }
 
           var formData = new FormData()
           formData.append('pic', this.$refs.fileSelector.files[0])
           _.forEach(data, (v, k) => formData.append(k, v))
           var res = await this.modPrice(formData)
           if(res.code === 0) {
-            this._getPriceList()
+            
+            if(this.loginInfo.type === 1) {
+              this._getPriceList()
+            }else {
+              this._getSelfPriceList()
+            }
             $(this.$refs.modal).modal('hide')
             this.$message({
               type: 'success',
