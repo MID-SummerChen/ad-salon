@@ -12,12 +12,14 @@ export default new Vuex.Store({
   state: {
     isLogin: false,
     loginInfo: null,
+    storeInfo: {}
   },
   getters: {
-    loginInfo: state => state.loginInfo
+    loginInfo: state => state.loginInfo,
+    storeInfo: state => state.storeInfo,
   },
   mutations: {
-    switchLoginStatus(state, status) {
+    SWITCH_LOGIN_STATUS(state, status) {
       state.isLogin = status
     },
     GET_LOGIN_INFO(state) {
@@ -25,13 +27,17 @@ export default new Vuex.Store({
     },
     SET_LOGIN_INFO(state, {type, acc}) {
       setStorage("loginInfo", {type, acc})
+    },
+    GOT_STORE_INFO(state, info) {
+      state.storeInfo = info
     }
   },
   actions: {
     async onCheckLogin({ state, commit, dispatch, rootState }, data) {
       var res = await dispatch("checkLogin", data)
       if(res.code === 0) {
-
+        commit("SWITCH_LOGIN_STATUS", true)
+        commit("GOT_STORE_INFO", res.data)
       }
     },
     async onLogout({ state, commit, dispatch, rootState }) {

@@ -9,11 +9,11 @@
         <el-form-item label="店家圖片">
           <input type="file" ref="fileSelector">
           <div v-if="form.imgSrc" style="margin-top: 20px">
-            <img :src="form.imgSrc" alt="">
+            <img style="max-width: 100%" :src="form.imgSrc" alt="">
           </div>
         </el-form-item>
         <el-form-item label="店家編號" prop="noid">
-          <el-input v-model="form.noid" :disabled="true"></el-input>
+          {{form.noid}}
         </el-form-item>
         <el-form-item label="店家名稱" prop="storeName">
           <el-input v-model="form.storeName"></el-input>
@@ -48,9 +48,7 @@
           <el-input v-model="form.mobile"></el-input>
         </el-form-item>
         <el-form-item label="方案">
-          <el-select v-model="form.package">
-            <el-option v-for="(pkg, i) in pkgList" :label="pkg" :value="pkg"></el-option>
-          </el-select>
+          {{form.package}}
         </el-form-item>
         <el-form-item label="公休日">
           <el-checkbox v-for="(d, i) in dates" v-model="form.restDates[i]" :true-label="1" :false-label="0">{{d}}</el-checkbox>
@@ -58,9 +56,9 @@
         <el-form-item label="VIP卡">
           <el-switch v-model="form.vip" on-text="" off-text=""/>
         </el-form-item>
-        
-        <el-form-item label="狀態">
-          <el-switch on-text="" off-text="" v-model="form.status"></el-switch>
+
+        <el-form-item>
+          <el-button type="primary" @click="onSubmit">確認送出</el-button>
         </el-form-item>
         
       </el-form>
@@ -75,7 +73,7 @@ import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
 import { required, minLength, between } from 'vuelidate/lib/validators'
 import globalMixin from '@/mixins/global'
 export default {
-  name: 'Store',
+  name: 'Basic',
   mixins: [globalMixin],
   data() {
     return {
@@ -112,8 +110,14 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'loginInfo'
+      'loginInfo',
+      'storeInfo',
     ])
+  },
+  watch: {
+    storeInfo() {
+      this.getEditData()
+    }
   },
   mounted() {
     if(this.loginInfo) {
@@ -127,37 +131,33 @@ export default {
   },
   methods: {
     ...mapActions([
-      'getStoreList',
       'modStore',
+      'onCheckLogin',
       'uploadStorePic',
     ]),
     async getEditData(id) {
-      var res = await this.getStoreList({noid_mask: id})
-      if(res.code === 0) {
-        var f = this.form
-        var s = res.data.storeList[0]
-        f.id = id
-        f.noid = s.noid
-        f.storeName = s.storeName
-        f.intro = s.intro
-        f.descr = s.descr
-        f.phone = s.phone
-        f.package = s.package
-        f.city = s.city-0
-        f.addr = s.address
-        f.openTime = s.openTime
-        f.contact = s.contact
-        f.mobile = s.mobile
-        f.status = s.stats == 1
-        f.imgSrc = s.pic
-        f.restDates = _(s.rests).toArray().map(v => v-0).value()
-        console.log(f.restDates)
-        f.vip = f.vip - 0
+      var s = this.storeInfo
+      var f = this.form
+      f.id = id
+      f.noid = s.noid
+      f.storeName = s.storeName
+      f.intro = s.intro
+      f.descr = s.descr
+      f.phone = s.phone
+      f.package = s.package
+      f.city = s.city-0
+      f.addr = s.address
+      f.openTime = s.openTime
+      f.contact = s.contact
+      f.mobile = s.mobile
+      f.status = s.stats == 1
+      f.imgSrc = s.pic
+      f.restDates = _(s.rests).toArray().map(v => v-0).value()
+      console.log(f.restDates)
+      f.vip = f.vip - 0
 
-        $(this.$refs.modal).modal('show')
-        console.log(id)
-      }
-      
+      $(this.$refs.modal).modal('show')
+      console.log(id)
       
     },
     async onSubmit() {
@@ -166,11 +166,15 @@ export default {
         if(valid) {
           var f = this.form
           var data = {
-            // storeGuid: f.id || -1,
-            noid: f.noid,
+            storeGuid: this.storeInfo.storeGuid,
+            pwd: f.pwd,
             storeName: f.storeName,
+            intro: f.intro,
+            descr: f.descr,
             phone: f.phone,
+            city: f.city,
             address: f.addr,
+            package: f.package,
             openTime: f.openTime,
             contact: f.contact,
             mobile: f.mobile,
@@ -184,9 +188,10 @@ export default {
           _.forEach(data, (v, k) => formData.append(k, v))
           var res = await this.modStore(formData)
           if(res.code === 0) {
+            this.onCheckLogin({loginType: this.loginInfo.type, username: this.loginInfo.acc})
             this.$message({
               type: 'success',
-              message: `${f.id ? '更新' : '新增'}成功!`
+              message: `更新成功!`
             });
           }
         }else {

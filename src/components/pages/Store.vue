@@ -293,7 +293,7 @@ export default {
         f.contact = s.contact
         f.mobile = s.mobile
         f.status = s.stats == 1
-        f.imgSrc = s.pic ? `http://${this.host}${s.pic}` : ""
+        f.imgSrc = s.pic
         f.restDates = _(s.rests).toArray().map(v => v-0).value()
         console.log(f.restDates)
         f.vip = f.vip - 0

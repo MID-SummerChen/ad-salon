@@ -13,10 +13,11 @@ import Order from '@/components/pages/Order'
 import Work from '@/components/pages/Work'
 import Login from '@/components/pages/Login'
 import Dashboard from '@/components/pages/Dashboard'
+import VuexStore from '@/store'
 
 Vue.use(Router)
 
-export default new Router({
+var router = new Router({
   routes: [
     {
       path: '/',
@@ -89,3 +90,23 @@ export default new Router({
 
   ]
 })
+
+router.beforeEach(async (to, from, next) => {
+    VuexStore.commit('GET_LOGIN_INFO')
+    if(!VuexStore.state.isLogin) {
+        var info = VuexStore.state.loginInfo
+        console.log(info)
+        if(info) {
+          await VuexStore.dispatch('onCheckLogin', {username: info.acc, loginType: info.type})
+        }
+    }
+    
+    if(to.name === 'Login' || VuexStore.state.isLogin) {
+        next()
+    }else {
+        next({name: 'Login'})
+    }
+  
+})
+
+export default router

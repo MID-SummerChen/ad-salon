@@ -55,8 +55,9 @@ export default {
       var res = await this.userLogin(data)
       if(res.code === 0) {
         this.SET_LOGIN_INFO({type: f.loginType, acc: f.username})
+        // this.SWITCH_LOGIN_STATUS(true)
         this.$router.push({name: 'Home'})
-        this.onCheckLogin({loginType: f.loginType, username: f.username})
+        // this.onCheckLogin({loginType: f.loginType, username: f.username})
       }
     }
   }
