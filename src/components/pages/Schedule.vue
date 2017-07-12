@@ -4,14 +4,14 @@
       <h1>預約行事曆</h1>
       <el-row :gutter="10">
         <el-col :span="6">
-          <el-select style="width: 100%" v-model="searchForm.storeGuid" @change="_getDesignerList">
-            <el-option label="全部店家" value=""></el-option>
+          <el-select v-if="loginInfo.type === 1" style="width: 100%" v-model="searchForm.storeGuid" @change="_getDesignerList">
+            <el-option label="請選擇髮廊" value=""></el-option>
             <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
           </el-select>
         </el-col>
         <el-col :span="6">
-          <el-select style="width: 100%" v-model="searchForm.designerGuid" :disabled="!searchForm.storeGuid">
-            <el-option label="全部設計師" value=""></el-option>
+          <el-select style="width: 100%" v-model="searchForm.designerGuid">
+            <el-option label="請選擇設計師" value=""></el-option>
             <el-option v-for="d in designerList" :label="d.nick" :value="d.designerGuid"></el-option>
           </el-select>
         </el-col>
@@ -36,7 +36,10 @@
         <template v-for="d in datesOfWeek">
           <el-table-column :label="d | date" width="180">
             <template scope="scope">
-              <div :class="{'bg-success': avaliableTime.findIndex(t => t.date === d && t.time === scope.row.time) > -1}" @click="addToAvaliable(d, scope.row.time)"></div>
+              <div :class="{
+                'bg-success': avaliableTime.findIndex(t => t.date === d && t.time === scope.row.time) > -1,
+                'bg-danger': avaliableTime.findIndex(t => t.date === d && t.time === scope.row.time && t.status == 2) > -1,
+                }" @click="addToAvaliable(d, scope.row.time)"></div>
             </template>
           </el-table-column>
         </template>
@@ -85,7 +88,6 @@ export default {
       datesOfWeek: [],
       storeList: [],
       designerList: [],
-      designerGuid: "",
       currentWeek: 1,
       _avaliableTime: [],
       avaliableTime: [],
@@ -97,8 +99,12 @@ export default {
     }
   },
   mounted() {
-    this._getStoreList()
-    this._getDesignerList()
+    if(this.loginInfo.type === 1) {
+      this._getStoreList()
+    }else {
+      this._getDesignerList()
+    }
+    
   },
   computed: {
     ...mapGetters([
@@ -137,6 +143,10 @@ export default {
       var data = {
         storeGuid: this.searchForm.storeGuid
       }
+      if(this.loginInfo.type !== 1) data.storeGuid = this.storeInfo.storeGuid
+
+      this.designerList = []
+      this.searchForm.designerGuid = ""
       var res = await this.getDesignerList(data)
       if(res.code === 0) {
         this.designerList = res.data.designerList
@@ -152,7 +162,7 @@ export default {
         this.datesOfWeek = _.map(res.data.timeTable, "date")
         this._avaliableTime = []
         _.each(res.data.timeTable, d => {
-          this._avaliableTime = this._avaliableTime.concat(_.map(d.timeArr, t => ({date: d.date, time: t.time})))
+          this._avaliableTime = this._avaliableTime.concat(_.map(d.timeArr, t => ({date: d.date, time: t.time, status: t.status})))
         })
         this.avaliableTime = _.clone(this._avaliableTime)
         // console.log(this.avaliableTime)
@@ -173,6 +183,8 @@ export default {
       console.log(data)
       var res = await this.addAvailableTime(data)
       if(res.code === 0) {
+        this.$message("修改成功")
+        this.onSearch()
         
       }
 

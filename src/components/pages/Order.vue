@@ -28,22 +28,21 @@
       :data="orderList"
       style="width: 100%">
       <el-table-column
-        width="130"
+        width="180"
         prop="orderDate"
         label="訂購日期">
       </el-table-column>
       <el-table-column
-        width="130"
+        width="180"
         prop="doneDate"
         label="核銷日期">
       </el-table-column>
-      <el-table-column
-        label="會員">
+      <el-table-column width="150" label="會員">
         <template scope="scope">
           {{toMember(scope.row.memberGuid)}}
         </template>
       </el-table-column>
-      <el-table-column label="店家">
+      <el-table-column label="店家" width="150">
         <template scope="scope">
           {{toStore(scope.row.storeGuid)}}
         </template>
@@ -82,6 +81,7 @@
             <h4 class="modal-title">訂單資訊</h4>
           </div>
           <div class="modal-body">
+            {{form}}
             <el-form ref="form" :model="form" :rules="rules" label-width="120px">
               <el-form-item label="訂購會員" prop="memberGuid">
                 <el-select v-model="form.memberGuid">
@@ -107,7 +107,7 @@
                 {{form.gold}}
                 <!--<el-input v-model="form.gold"></el-input>-->
               </el-form-item>
-              <el-form-item v-if="form.priceGuid" label="所需時間" prop="gold">
+              <el-form-item v-if="form.priceGuid" label="所需時間" prop="neededTime">
                 {{form.neededTime}} /hr
               </el-form-item>
               <el-form-item label="預約時間" prop="bookDate">
@@ -132,7 +132,7 @@
                 <!--{{form}}-->
               </el-form-item>
               <el-form-item label="有VIP卡" prop="vip">
-                <el-checkbox v-model="form.vip" :true-value="1" :false-value="0"></el-checkbox>
+                <el-checkbox v-model="form.vip" :true-value="true" :false-value="false"></el-checkbox>
                 <!--<el-date-picker v-model="form.orderDate" type="date"></el-date-picker>-->
               </el-form-item>
               <el-form-item label="訂購日期" prop="orderDate">
@@ -206,7 +206,7 @@ export default {
         bookDate: "",
         startTime: "",
         endTime: "",
-        vip: 0,
+        vip: false,
         orderDate: "",
         doneDate: "",
         status: "0",
@@ -351,7 +351,7 @@ export default {
         bookDate: "",
         startTime: "",
         endTime: "",
-        vip: 0,
+        vip: false,
         orderDate: "",
         doneDate: "",
         status: "0",
@@ -413,10 +413,13 @@ export default {
         f.id = id
         f.storeGuid = s.storeGuid
         f.memberGuid = s.memberGuid
+        f.designerGuid = s.designerGuid
+        f.priceGuid = s.priceGuid
         f.orderDate = s.orderDate
         f.doneDate = s.doneDate !== '-' ? s.doneDate : ''
         f.gold = s.gold
         f.status = s.stats
+        f.vips = s.vip == 1
         $(this.$refs.modal).modal('show')
         console.log(id)
       }
@@ -436,18 +439,18 @@ export default {
             storeGuid: f.storeGuid,
             memberGuid: f.memberGuid,
             designerGuid: f.designerGuid,
-            priceGuid: f.priceGuid,
+            service: JSON.stringify([f.priceGuid]),
             bookDate: f.bookDate,
             startTime: f.startTime,
             endTime: f.endTime,
             // orderDate: moment(f.orderDate).format('YYYY-MM-DD'),
             // doneDate: f.doneDate ? moment(f.doneDate).format('YYYY-MM-DD') : "",
             // gold: f.gold,
-            vips: f.vip,
+            vips: f.vip ? 1 : 0,
             stats: f.status,
           }
 
-          var res = await this.modOrder(data)
+          var res = await this.bookAvailableTime(data)
           if(res.code === 0) {
             this._getOrderList()
             $(this.$refs.modal).modal('hide')

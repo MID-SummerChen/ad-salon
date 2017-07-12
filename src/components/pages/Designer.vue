@@ -3,7 +3,7 @@
     <div class="page-header">
       <h1>設計師管理</h1>
       <el-row :gutter="10">
-        <el-col :span="6">
+        <el-col v-if="loginInfo.type === 1" :span="6">
           <el-select style="width: 100%" v-model="searchForm.storeGuid">
             <el-option label="全部" value=""></el-option>
             <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
@@ -18,7 +18,7 @@
     <el-table
       :data="designerList"
       style="width: 100%">
-      <el-table-column label="所屬店家" width="150">
+      <el-table-column v-if="loginInfo.type === 1" label="髮廊" width="150">
         <template scope="scope">
           {{toStore(scope.row.storeGuid)}}
         </template>
@@ -53,11 +53,10 @@
           </div>
           <div class="modal-body">
             <el-form ref="form" :model="form" :rules="rules" label-width="120px">
-              <el-form-item label="所屬店家" prop="store">
+              <el-form-item v-if="loginInfo.type === 1" label="所屬店家" prop="store">
                 <el-select v-model="form.store">
                   <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
                 </el-select>
-                
               </el-form-item>
               <el-form-item label="帳號" prop="username">
                 <el-input v-model="form.username" :disabled="!!form.id"></el-input>
@@ -172,8 +171,13 @@ export default {
     }
   },
   mounted() {
-    this._getStoreList()
-    this._getDesignerList()
+    if(this.loginInfo.type === 1) {
+      this._getStoreList()
+      this._getDesignerList()
+    }else {
+      this._getDesignerList()
+    }
+    
 
   },
   computed: {
@@ -225,6 +229,7 @@ export default {
         pageNo: this.pagination.page
       }
       if(this.searchForm.storeGuid) data.storeGuid = this.searchForm.storeGuid
+      if(this.loginInfo.type !== 1) data.storeGuid = this.storeInfo.storeGuid
 
       var res = await this.getDesignerList(data)
       if(res.code === 0) {

@@ -173,7 +173,7 @@ export default {
       this._getStoreList()
       this._getPriceList()
     }else{
-      this._getSelfPriceList()
+      this._getPriceList()
     }
     
     
@@ -228,19 +228,8 @@ export default {
       }
       var sf = this.searchForm
       if(sf.storeGuid) data.storeGuid = sf.storeGuid
+      if(this.loginInfo.type !== 1) data.storeGuid = this.storeInfo.storeGuid
 
-      var res = await this.getPriceList(data)
-      if(res.code === 0) {
-        this.priceList = res.data.priceList.map(price => this._initPrice(price))
-        this.pagination.page = res.data.pageNo
-        this.pagination.count = this.priceList.length
-      }
-    },
-    async _getSelfPriceList() {
-      var data = {
-        pageNo: this.pagination.page,
-        storeGuid: this.storeInfo.storeGuid
-      }
       var res = await this.getPriceList(data)
       if(res.code === 0) {
         this.priceList = res.data.priceList.map(price => this._initPrice(price))

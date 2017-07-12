@@ -131,7 +131,7 @@ export default {
       this._getStoreList()
       this._getAdvList()
     }else {
-     this._getStoreAdvList() 
+     this._getAdvList() 
     }
     
 
@@ -181,19 +181,7 @@ export default {
       }
       var sf = this.searchForm
       if(sf.storeGuid) data.storeGuid = sf.storeGuid
-
-      var res = await this.getAdvList(data)
-      if(res.code === 0) {
-        this.advList = res.data.advList.map(adv => this._initAdv(adv))
-        this.pagination.page = res.data.pageNo
-        this.pagination.count = this.advList.length
-      }
-    },
-    async _getStoreAdvList() {
-      var data = {
-        pageNo: this.pagination.page,
-        storeGuid: this.storeInfo.storeGuid,
-      }
+      if(this.loginInfo.type !== 1) data.storeGuid = this.storeInfo.storeGuid
 
       var res = await this.getAdvList(data)
       if(res.code === 0) {

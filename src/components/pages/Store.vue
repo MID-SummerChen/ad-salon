@@ -296,7 +296,7 @@ export default {
         f.imgSrc = s.pic
         f.restDates = _(s.rests).toArray().map(v => v-0).value()
         console.log(f.restDates)
-        f.vip = f.vip - 0
+        f.vip = s.vips == 1
 
         $(this.$refs.modal).modal('show')
         console.log(id)

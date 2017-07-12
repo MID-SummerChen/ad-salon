@@ -107,8 +107,13 @@
                   <el-option v-for="d in designerList" :label="d.nick" :value="d.designerGuid"></el-option>
                 </el-select>
               </el-form-item>
+              <el-form-item label="服務項目">
+                <el-select v-model="form.priceGuid" style="width: 100%" @change="onServiceChanged">
+                  <el-option v-for="p in priceList" :label="p.name" :value="p.priceGuid"></el-option>
+                </el-select>
+              </el-form-item>
               <el-form-item label="價格">
-                <el-input v-model="form.price"></el-input>
+                {{form.price}}
               </el-form-item>
               <el-form-item label="描述">
                 <el-input v-model="form.descr" type="textarea" :rows="2"></el-input>
@@ -165,6 +170,7 @@ export default {
   mixins: [globalMixin],
   data() {
     return {
+      priceList: [],
       workList: [],
       storeList: [],
       designerList: [],
@@ -183,6 +189,7 @@ export default {
         id: "",
         storeGuid: "",
         designerGuid: "",
+        priceGuid: "",
         workName: "",
         price: 200,
         descr: "",
@@ -209,18 +216,15 @@ export default {
   mounted() {
     this._getStoreList()
     this._getDesignerList()
-    this._getHairColorList()
-    this._getHairLenList()
-    this._getHairStyleList()
-    this._getHairStyleList()
+    this._getBasic()
     this._getWorkList()
+    this._getPriceList()
   },
   methods: {
     ...mapActions([
-      'getHairLenList',
-      'getHairStyleList',
-      'getHairColorList',
+      'getBasic',
       'getStoreList',
+      'getPriceList',
       'getDesignerList',
       'getWorkList',
       'modWork',
@@ -234,21 +238,30 @@ export default {
     onSearch() {
       this._getWorkList()
     },
-    async _getHairStyleList() {
-      var res = await this.getHairStyleList()
+    onServiceChanged() {
+      if(this.form.priceGuid) {
+        var i = _.findIndex(this.priceList, {priceGuid: this.form.priceGuid})
+        if(i > -1) {
+          this.form.price = this.priceList[i].price
+        }
+      }
+    },
+    async _getPriceList() {
+      var data = {}
+      var sf = this.searchForm
+      if(sf.storeGuid) data.storeGuid = sf.storeGuid
+      if(this.loginInfo.type !== 1) data.storeGuid = this.storeInfo.storeGuid
+
+      var res = await this.getPriceList(data)
+      if(res.code === 0) {
+        this.priceList = res.data.priceList
+      }
+    },
+    async _getBasic() {
+      var res = await this.getBasic()
       if(res.code === 0) {
         this.hairStyleList = res.data.style
-      }
-    },
-    async _getHairLenList() {
-      var res = await this.getHairLenList()
-      if(res.code === 0) {
         this.hairLenList = res.data.hLength
-      }
-    },
-    async _getHairColorList() {
-      var res = await this.getHairColorList()
-      if(res.code === 0) {
         this.hairColorList = res.data.hColor
       }
     },
@@ -282,6 +295,7 @@ export default {
         id: "",
         storeGuid: "",
         designerGuid: "",
+        priceGuid: "",
         workName: "",
         price: 200,
         descr: "",
@@ -347,8 +361,9 @@ export default {
         f.id = id
         f.storeGuid = s.storeGuid
         f.designerGuid = s.designerGuid
+        f.priceGuid = s.priceGuid
         f.workName = s.workName
-        f.price = s.price
+        f.price = s.service_price
         f.descr = s.descr
         f.descr = s.descr
         f.hColor = s.hColor
@@ -378,6 +393,7 @@ export default {
             workGuid: f.id || -1,
             storeGuid: f.storeGuid,
             designerGuid: f.designerGuid,
+            priceGuid: f.priceGuid,
             workName: f.workName,
             price: f.price,
             descr: f.descr,
