@@ -3,31 +3,28 @@
     <div class="page-header">
       <h1>廣告管理</h1>
       <el-row :gutter="10">
-        <el-col v-if="loginInfo.type === 1" :span="6">
+        <!--<el-col v-if="loginInfo.type === 1" :span="6">
           <el-select style="width: 100%" v-model="searchForm.storeGuid">
             <el-option label="總管理後台" value=""></el-option>
             <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
           </el-select>
-        </el-col>
+        </el-col>-->
         <el-col :span="6">
-          <el-button v-if="loginInfo.type === 1" type="primary" @click="onSearch">搜尋</el-button>
+          <!--<el-button v-if="loginInfo.type === 1" type="primary" @click="onSearch">搜尋</el-button>-->
           <el-button type="danger" @click="onCreate">新增廣告</el-button>
           <!--<el-button v-if="loginInfo.type === 1 || advList.length < 3" type="danger" @click="onCreate">新增廣告</el-button>-->
         </el-col>
       </el-row>
     </div>
     <el-table :data="advList" style="width: 100%">
-      <el-table-column prop="advName" label="廣告名稱">
-      </el-table-column>
+      <el-table-column width="180" prop="advName" label="廣告名稱"></el-table-column>
       <el-table-column width="200" label="圖片">
         <template scope="scope">
           <img v-if="scope.row.pic" :src="scope.row.pic" alt="">
         </template>
       </el-table-column>
-      <el-table-column prop="sDate" label="開始時間">
-      </el-table-column>
-      <el-table-column prop="eDate" label="結束時間">
-      </el-table-column>
+      <el-table-column width="150" prop="sDate" label="開始時間"></el-table-column>
+      <el-table-column width="150" prop="eDate" label="結束時間"></el-table-column>
       <el-table-column label="狀態">
         <template scope="scope">
           {{toStatus(scope.row.stats)}}
@@ -59,14 +56,17 @@
                   <img :src="form.imgSrc" alt="">
                 </div>
               </el-form-item>
-              <el-form-item v-if="loginInfo.type === 1" label="廣告目標" prop="storeGuid">
+              <!--<el-form-item v-if="loginInfo.type === 1" label="廣告目標" prop="storeGuid">
                 <el-select v-model="form.storeGuid" style="width: 100%">
                   <el-option label="總管理後台" value=""></el-option>
                   <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
                 </el-select>
-              </el-form-item>
+              </el-form-item>-->
               <el-form-item label="廣告名稱" prop="advName">
                 <el-input v-model="form.advName"></el-input>
+              </el-form-item>
+              <el-form-item label="廣告連結" prop="url">
+                <el-input v-model="form.url"></el-input>
               </el-form-item>
               <el-form-item label="廣告期間">
                 <el-col :span="11">
@@ -114,6 +114,7 @@ export default {
         id: "",
         storeGuid: "",
         advName: "",
+        url: "",
         sDate: moment(),
         eDate: moment(),
         status: true,
@@ -156,6 +157,7 @@ export default {
         id: "",
         storeGuid: "",
         advName: "",
+        url: "",
         sDate: moment(),
         eDate: moment(),
         status: true,
@@ -206,11 +208,7 @@ export default {
             type: 'success',
             message: '删除成功!'
           });
-          if(this.loginType === 1) {
-            this._getAdvList()
-          }else {
-            this._getStoreAdvList()
-          }
+          this._getAdvList()
         }
         
       }).catch(() => {
@@ -229,6 +227,7 @@ export default {
         var s = this.advList[i]
         f.id = id
         f.advName = s.advName
+        f.url = s.url
         f.storeGuid = s.storeGuid
         f.sDate = s.sDate
         f.eDate = s.eDate
@@ -253,6 +252,7 @@ export default {
             advGuid: f.id || -1,
             storeGuid: f.storeGuid,
             advName: f.advName,
+            url: f.url,
             sDate: moment(f.sDate).format('YYYY-MM-DD'),
             eDate: moment(f.eDate).format('YYYY-MM-DD'),
             stats: f.status ? 1 : 2,
@@ -267,11 +267,7 @@ export default {
           var res = await this.modAdv(formData)
           if(res.code === 0) {
             
-            if(this.loginType === 1) {
-              this._getAdvList()
-            }else {
-              this._getStoreAdvList()
-            }
+            this._getAdvList()
             $(this.$refs.modal).modal('hide')
             this.$message({
               type: 'success',

@@ -13,39 +13,19 @@
       </el-row>
     </div>
     <el-table :data="memberList" style="width: 100%">
-      <el-table-column
-        label="會員帳號"
-        prop="username">
-      </el-table-column>
-      <el-table-column
-        label="暱稱"
-        prop="nick">
-      </el-table-column>
-      <el-table-column
-        label="手機"
-        prop="mobile">
-      </el-table-column>
-      <el-table-column
-        label="剩餘紅利"
-        width="100"
-        prop="bonus">
-      </el-table-column>
-      <el-table-column
-        label="訂購日期"
-        width="120"
-        prop="orderDate">
-      </el-table-column>
+      <el-table-column label="會員帳號" prop="username" width="120"></el-table-column>
+      <el-table-column label="暱稱" prop="nick" width="120"></el-table-column>
+      <el-table-column label="手機" prop="mobile" width="120"></el-table-column>
+      <el-table-column label="近一月消費金額" width="100" prop="orderGold"></el-table-column>
+      <el-table-column label="剩餘紅利" width="100" prop="bonus"></el-table-column>
+      <el-table-column label="訂購日期" width="180" prop="orderDate"></el-table-column>
 
-      <el-table-column
-        label="狀態">
+      <el-table-column label="狀態">
         <template scope="scope">
           {{toStatus(scope.row.stats)}}
         </template>
       </el-table-column>
-      <el-table-column
-        fixed="right"
-        label="操作"
-        width="100">
+      <el-table-column fixed="right" label="操作" width="100">
         <template scope="scope">
           <el-button @click="onEdit(scope.row.memberGuid)" type="text" size="small">编辑</el-button>
           <el-button @click="onDel(scope.row.memberGuid)" type="text" size="small">刪除</el-button>

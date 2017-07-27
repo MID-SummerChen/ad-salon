@@ -34,7 +34,10 @@ export default {
     handleError,
 
     userLogin: async (store, data) => await apiInit(store, "POST", "form", `userLogin.php`, data),
+    userLogout: async (store, data) => await apiInit(store, "POST", "form", `userLogout.php`, data),
     checkLogin: async (store, data) => await apiInit(store, "POST", "form", `chkLogin.php`, data),
+    getManagerList: async (store, data) => await apiInit(store, "POST", "form", `getAdminList.php`, data),
+    modManager: async (store, data) => await apiInit(store, "POST", "multi", `modAdmin.php`, data),
     getPriceList: async (store, data) => await apiInit(store, "POST", "form", `getPriceList.php`, data),
     modPrice: async (store, data) => await apiInit(store, "POST", "multi", `modPrice.php`, data),
     delPrice: async (store, data) => await apiInit(store, "POST", "form", `modPrice.php`, _.extend(data, {del: 1})),
@@ -94,6 +97,7 @@ async function apiInit({state, commit, dispatch}, method, contentType, route, da
   console.log(Qs.stringify(data))
 
   var response = await axios({
+    timeout: 60 * 1000,
     method,
     url,
     headers,

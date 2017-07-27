@@ -4,7 +4,7 @@
       <h1>基本設定</h1>
     </div>
 
-    <div class="col-sm-8">
+    <div class="col-sm-12">
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
         <el-form-item label="店家圖片">
           <input type="file" ref="fileSelector">
@@ -120,6 +120,7 @@ export default {
     }
   },
   mounted() {
+    this._getCityList()
     this.getEditData()
     
   },
@@ -128,7 +129,14 @@ export default {
       'modStore',
       'onCheckLogin',
       'uploadStorePic',
+      'getCityList',
     ]),
+    async _getCityList() {
+      var res = await this.getCityList()
+      if(res.code === 0) {
+        this.cityList = res.data.city
+      }
+    },
     async getEditData() {
       var s = this.storeInfo
       var f = this.form

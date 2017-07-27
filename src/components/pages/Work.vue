@@ -3,20 +3,20 @@
     <div class="page-header">
       <h1>作品管理</h1>
       <el-row :gutter="10">
-        <el-col :span="6">
-          <el-select style="width: 100%" v-model="searchForm.storeGuid">
+        <el-col v-if="loginInfo.type === 1" :span="6">
+          <el-select style="width: 100%" v-model="searchForm.storeGuid" @change="onStoreChanged">
             <el-option label="全部" value=""></el-option>
             <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
           </el-select>
         </el-col>
-        <el-col :span="6">
+        <el-col v-if="loginInfo.type === 1" :span="6">
           <el-select style="width: 100%" v-model="searchForm.designerGuid">
             <el-option label="全部" value=""></el-option>
             <el-option v-for="d in designerList" :label="d.nick" :value="d.designerGuid"></el-option>
           </el-select>
         </el-col>
         <el-col :span="6">
-          <el-button type="primary" @click="onSearch">搜尋</el-button>
+          <el-button v-if="loginInfo.type === 1" type="primary" @click="onSearch">搜尋</el-button>
           <el-button type="danger" @click="onCreate">新增作品</el-button>
         </el-col>
       </el-row>
@@ -33,7 +33,7 @@
           {{toDesigner(scope.row.designerGuid)}}
         </template>
       </el-table-column>
-      <el-table-column label="髮廊" width="150">
+      <el-table-column v-if="loginInfo.type === 1" label="髮廊" width="150">
         <template scope="scope">
           {{toStore(scope.row.storeGuid)}}
         </template>
@@ -94,20 +94,20 @@
                 </div>
               </el-form-item>
               
-              <el-form-item label="作品名稱">
+              <el-form-item label="作品名稱" prop="workName">
                 <el-input v-model="form.workName"></el-input>
               </el-form-item>
-              <el-form-item label="髮廊">
+              <el-form-item v-if="loginInfo.type === 1" label="髮廊">
                 <el-select v-model="form.storeGuid" style="width: 100%">
                   <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
                 </el-select>
               </el-form-item>
-              <el-form-item label="設計師">
+              <el-form-item v-if="loginInfo.type !== 3" label="設計師" prop="designerGuid">
                 <el-select v-model="form.designerGuid" style="width: 100%">
                   <el-option v-for="d in designerList" :label="d.nick" :value="d.designerGuid"></el-option>
                 </el-select>
               </el-form-item>
-              <el-form-item label="服務項目">
+              <el-form-item label="服務項目" prop="priceGuid">
                 <el-select v-model="form.priceGuid" style="width: 100%" @change="onServiceChanged">
                   <el-option v-for="p in priceList" :label="p.name" :value="p.priceGuid"></el-option>
                 </el-select>
@@ -207,6 +207,12 @@ export default {
         workName: [
           { required: true, message: '不可為空'}
         ],
+        designerGuid: [
+          { required: true, message: '不可為空'}
+        ],
+        priceGuid: [
+          { required: true, message: '不可為空'}
+        ],
         noid: [
           { required: true, message: '不可為空'}
         ],
@@ -214,9 +220,14 @@ export default {
     }
   },
   mounted() {
-    this._getStoreList()
-    this._getDesignerList()
     this._getBasic()
+    if(this.loginInfo.type === 1) {
+      this._getStoreList()
+    }
+    if(this.loginInfo.type === 2) {
+      this._getDesignerList()
+    }
+    
     this._getWorkList()
     this._getPriceList()
   },
@@ -237,6 +248,13 @@ export default {
     },
     onSearch() {
       this._getWorkList()
+    },
+    onStoreChanged() {
+      if(this.searchForm.storeGuid) {
+        this._getDesignerList()
+        this._getWorkList()
+        this._getPriceList()
+      }
     },
     onServiceChanged() {
       if(this.form.priceGuid) {
@@ -272,7 +290,12 @@ export default {
       }
     },
     async _getDesignerList() {
-      var res = await this.getDesignerList()
+      var data = {}
+      var sf = this.searchForm
+      if(sf.storeGuid) data.storeGuid = sf.storeGuid
+      if(this.loginInfo.type !== 1) data.storeGuid = this.storeInfo.storeGuid
+
+      var res = await this.getDesignerList(data)
       if(res.code === 0) {
         this.designerList = res.data.designerList
       }
@@ -317,6 +340,8 @@ export default {
       var sf = this.searchForm
       if(sf.storeGuid) data.storeGuid = sf.storeGuid
       if(sf.designerGuid) data.designerGuid = sf.designerGuid
+      if(this.loginInfo.type !== 1) data.storeGuid = this.storeInfo.storeGuid
+      if(this.loginInfo.type === 3) data.designerGuid = this.storeInfo.designerGuid
 
       var res = await this.getWorkList(data)
       if(res.code === 0) {
@@ -404,6 +429,8 @@ export default {
             gender: f.gender,
             stats: f.status ? 1 : 2,
           }
+          if(this.loginInfo.type !== 1) data.storeGuid = this.storeInfo.storeGuid
+          if(this.loginInfo.type === 3) data.designerGuid = this.storeInfo.designerGuid
 
           var formData = new FormData()
           formData.append('pic1', this.$refs.pic1.files[0])

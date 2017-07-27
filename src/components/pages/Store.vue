@@ -12,37 +12,22 @@
         </el-col>
       </el-row>
     </div>
-    <el-table
-      :data="storeList"
-      style="width: 100%">
-      <el-table-column
-        prop="noid"
-        label="店家編號">
-      </el-table-column>
-      <el-table-column
-        prop="storeName"
-        label="店家名稱">
-      </el-table-column>
-      <el-table-column
-        prop="designer"
-        label="設計師">
-      </el-table-column>
-      <el-table-column
-        prop="commision"
-        label="紅利累計">
-      </el-table-column>
-      <el-table-column
-        label="狀態">
+    <el-table :data="storeList" style="width: 100%">
+      <el-table-column width="100" prop="noid" label="店家編號"></el-table-column>
+      <el-table-column width="150" prop="storeName" label="店家名稱"></el-table-column>
+      <el-table-column width="80" prop="designer" label="設計師"></el-table-column>
+      <el-table-column width="120" prop="commision" label="發出紅利"></el-table-column>
+      <el-table-column width="120" prop="commisionIn" label="收入紅利"></el-table-column>
+      <el-table-column width="120" prop="commisionMon" label="發出紅利(月)"></el-table-column>
+      <el-table-column width="120" prop="commisionMonIn" label="收入紅利(月)"></el-table-column>
+      <el-table-column width="120" prop="orderDone" label="成交筆數"></el-table-column>
+      <el-table-column label="狀態">
         <template scope="scope">
           {{toStatus(scope.row.stats)}}
         </template>
       </el-table-column>
-      <el-table-column
-        fixed="right"
-        label="操作"
-        width="100">
+      <el-table-column fixed="right" label="操作" width="100">
         <template scope="scope">
-          
           <el-button @click="onEdit(scope.row.storeGuid)" type="text" size="small">编辑</el-button>
           <el-button @click="onDel(scope.row.storeGuid)" type="text" size="small">刪除</el-button>
         </template>
@@ -74,13 +59,16 @@
                 <el-input v-model="form.storeName"></el-input>
               </el-form-item>
               <el-form-item label="店家簡述" prop="intro">
-                <el-input v-model="form.intro"></el-input>
+                <el-input type="textarea" :rows="2" v-model="form.intro"></el-input>
               </el-form-item>
               <el-form-item label="詳細介紹" prop="descr">
-                <el-input v-model="form.descr"></el-input>
+                <el-input type="textarea" :rows="4" v-model="form.descr"></el-input>
               </el-form-item>
-              <el-form-item label="密碼" prop="pwd">
-                <el-input v-model="form.pwd"></el-input>
+              <el-form-item label="密碼" prop="pw">
+                <el-input v-model="form.pw"></el-input>
+              </el-form-item>
+              <el-form-item label="確認密碼" prop="pw_c">
+                <el-input v-model="form.pw"></el-input>
               </el-form-item>
               <el-form-item label="電話">
                 <el-input v-model="form.phone"></el-input>
@@ -140,6 +128,26 @@ export default {
   name: 'Store',
   mixins: [globalMixin],
   data() {
+    var validPw = (rule, value, cb) => {
+      if(this.form.id) {
+        cb();
+      } else if(value === '') {
+        cb(new Error('不可為空'));
+      } else {
+        cb();
+      }
+    };
+    var validPwConfirm = (rule, value, cb) => {
+      if(this.form.id) {
+        cb();
+      } else if(value === '') {
+        cb(new Error('不可為空'));
+      } else if (value != this.form.pw) {
+        cb(new Error('密碼不同!'));
+      } else {
+        cb();
+      }
+    };
     return {
       cityList: [],
       pkgList: [],
@@ -153,7 +161,8 @@ export default {
       form: {
         id: "",
         noid: "",
-        pwd: "",
+        pw: "",
+        pw_c: "",
         package: "",
         storeName: "",
         intro: "",
@@ -173,6 +182,12 @@ export default {
       rules: {
         storeName: [
           { required: true, message: '不可為空'}
+        ],
+        pw: [
+          { validator: validPw},
+        ],
+        pw_c: [
+          { validator: validPwConfirm},
         ],
       }
     }
@@ -203,7 +218,7 @@ export default {
       this.form = Object.assign({}, this.form, {
         id: "",
         noid: "",
-        pwd: "",
+        pw: "",
         package: "",
         storeName: "",
         intro: "",
@@ -314,7 +329,7 @@ export default {
           var f = this.form
           var data = {
             storeGuid: f.id || -1,
-            pwd: f.pwd,
+            pwd: f.pw,
             storeName: f.storeName,
             intro: f.intro,
             descr: f.descr,

@@ -252,11 +252,7 @@ export default {
             type: 'success',
             message: '删除成功!'
           });
-          if(this.loginInfo.type === 1) {
-            this._getPriceList()
-          }else {
-            this._getSelfPriceList()
-          }
+          this._getPriceList()
         }
         
       }).catch(() => {
@@ -322,11 +318,7 @@ export default {
           var res = await this.modPrice(formData)
           if(res.code === 0) {
             
-            if(this.loginInfo.type === 1) {
-              this._getPriceList()
-            }else {
-              this._getSelfPriceList()
-            }
+            this._getPriceList()
             $(this.$refs.modal).modal('hide')
             this.$message({
               type: 'success',

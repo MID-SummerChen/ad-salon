@@ -1,42 +1,31 @@
 <template>
-  <div id="designer">
+  <div id="manager">
     <div class="page-header">
-      <h1>設計師管理</h1>
+      <h1>管理員設定</h1>
       <el-row :gutter="10">
-        <el-col v-if="loginInfo.type === 1" :span="6">
-          <el-select style="width: 100%" v-model="searchForm.storeGuid">
-            <el-option label="全部" value=""></el-option>
-            <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
-          </el-select>
+        <el-col :span="6">
+          <el-input v-model="searchForm.username" placeholder="管理員帳號"></el-input>
         </el-col>
         <el-col :span="6">
           <el-button v-if="loginInfo.type === 1" type="primary" @click="onSearch">搜尋</el-button>
-          <el-button type="danger" @click="onCreate">新增設計師</el-button>
+          <el-button type="danger" @click="onCreate">新增管理員</el-button>
         </el-col>
       </el-row>
     </div>
     <el-table
-      :data="designerList"
+      :data="managerList"
       style="width: 100%">
       <el-table-column v-if="loginInfo.type === 1" label="髮廊" width="150">
         <template scope="scope">
           {{toStore(scope.row.storeGuid)}}
         </template>
       </el-table-column>
-      <el-table-column label="設計師帳號" prop="username" width="120"></el-table-column>
-      <el-table-column label="暱稱" prop="nick" width="120"></el-table-column>
-      <el-table-column label="作品數" prop="workNum" width="100"></el-table-column>
-      <el-table-column label="成交(總)" prop="orderDone" width="100"></el-table-column>
-      <el-table-column label="成交(月)" prop="orderDoneMon" width="100"></el-table-column>
-      <el-table-column label="狀態">
+      <el-table-column label="管理員帳號" prop="username"></el-table-column>
+      <el-table-column label="暱稱" prop="nick"></el-table-column>
+      <el-table-column fixed="right" label="操作" width="150">
         <template scope="scope">
-          {{toStatus(scope.row.stats)}}
-        </template>
-      </el-table-column>
-      <el-table-column fixed="right" label="操作" width="100">
-        <template scope="scope">
-          <el-button @click="onEdit(scope.row.designerGuid)" type="text" size="small">编辑</el-button>
-          <el-button @click="onDel(scope.row.designerGuid)" type="text" size="small">刪除</el-button>
+          <el-button @click="onEdit(scope.row.adminid)" type="text" size="small">编辑</el-button>
+          <el-button @click="onDel(scope.row.adminid)" type="text" size="small">刪除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -49,7 +38,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title">設計師資訊</h4>
+            <h4 class="modal-title">管理員資訊</h4>
           </div>
           <div class="modal-body">
             <el-form ref="form" :model="form" :rules="rules" label-width="120px">
@@ -70,28 +59,6 @@
               <el-form-item label="密碼確認" prop="pw_c">
                 <el-input type="password" v-model="form.pw_c"></el-input>
               </el-form-item>
-              <el-form-item label="生日" prop="birth">
-                <el-date-picker v-model="form.birth" type="date"></el-date-picker>
-              </el-form-item>
-              <el-form-item label="資歷(since)" prop="sinceYear">
-                <el-date-picker v-model="form.sinceYear" type="year"></el-date-picker>
-              </el-form-item>
-              <el-form-item label="工作時間" prop="workingTime">
-                <el-input v-model="form.workingTime"></el-input>
-              </el-form-item>
-              <el-form-item label="性別" prop="gender">
-                <el-radio-group v-model="form.gender">
-                  <el-radio :label="1">男</el-radio>
-                  <el-radio :label="2">女</el-radio>
-                </el-radio-group>
-              </el-form-item>
-              
-              <el-form-item label="狀態">
-                <el-switch on-text="" off-text="" v-model="form.status"></el-switch>
-              </el-form-item>
-              <el-form-item label="描述" prop="desc">
-                <el-input type="textarea" v-model="form.desc"></el-input>
-              </el-form-item>
               
             </el-form>
           </div>
@@ -111,7 +78,7 @@ import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
 import { required, minLength, between, sameAs } from 'vuelidate/lib/validators'
 import globalMixin from '@/mixins/global'
 export default {
-  name: 'Designer',
+  name: 'Manager',
   mixins: [globalMixin],
   data() {
     var validPw = (rule, value, cb) => {
@@ -135,10 +102,10 @@ export default {
       }
     };
     return {
-      designerList: [],
+      managerList: [],
       storeList: [],
       searchForm: {
-        storeGuid: ""
+        username: ""
       },
       form: {
         id: "",
@@ -147,12 +114,6 @@ export default {
         pw: "",
         pw_c: "",
         status: true,
-        store: "",
-        birth: moment(),
-        desc: "",
-        workingTime: "",
-        gender: "1",
-        sinceYear: moment(),
       },
       rules: {
         username: [
@@ -171,14 +132,7 @@ export default {
     }
   },
   mounted() {
-    if(this.loginInfo.type === 1) {
-      this._getStoreList()
-      this._getDesignerList()
-    }else {
-      this._getDesignerList()
-    }
-    
-
+    this._getManagerList()
   },
   computed: {
 
@@ -186,16 +140,16 @@ export default {
   methods: {
     ...mapActions([
       'getStoreList',
-      'getDesignerList',
-      'modDesigner',
+      'getManagerList',
+      'modManager',
     ]),
-    _initDesigner(designer) {
+    _initManager(manager) {
       return {
-        ...designer
+        ...manager
       }
     },
     async onSearch() {
-      this._getDesignerList()
+      this._getManagerList()
     },
     toStore(id) {
       var i = this.storeList.findIndex(store => store.storeGuid === id)
@@ -224,18 +178,17 @@ export default {
         this.storeList = res.data.storeList
       }
     },
-    async _getDesignerList() {
+    async _getManagerList() {
       var data = {
         pageNo: this.pagination.page
       }
-      if(this.searchForm.storeGuid) data.storeGuid = this.searchForm.storeGuid
-      if(this.loginInfo.type !== 1) data.storeGuid = this.storeInfo.storeGuid
+      if(this.searchForm.username) data.username = this.searchForm.username
 
-      var res = await this.getDesignerList(data)
+      var res = await this.getManagerList(data)
       if(res.code === 0) {
-        this.designerList = res.data.designerList.map(designer => this._initDesigner(designer))
+        this.managerList = res.data.adminList.map(manager => this._initManager(manager))
         this.pagination.page = res.data.pageNo
-        this.pagination.count = this.designerList.length
+        this.pagination.count = this.managerList.length
       }
     },
     onDel(id) {
@@ -245,16 +198,16 @@ export default {
         type: 'warning'
       }).then(async () => {
         var data = {
-          designerGuid: id,
+          adminid: id,
           del: 1
         }
-        var res = await this.modDesigner(data)
+        var res = await this.modManager(data)
         if(res.code === 0) {
           this.$message({
             type: 'success',
             message: '删除成功!'
           });
-          this._getDesignerList()
+          this._getManagerList()
         }
         
       }).catch(() => {
@@ -268,18 +221,12 @@ export default {
     onEdit(id) {
       this.clearForm()
       var f = this.form
-      var i = this.designerList.findIndex(designer => designer.designerGuid === id)
+      var i = this.managerList.findIndex(manager => manager.adminid === id)
       if(i > -1) {
-        var s = this.designerList[i]
+        var s = this.managerList[i]
         f.id = id
         f.username = s.username
         f.nick = s.nick
-        f.store = s.storeGuid
-        f.birth = moment(s.dob)
-        f.desc = s.description
-        f.workingTime = s.workingTime
-        f.gender = s.gender
-        f.status = s.stats == 1
         $(this.$refs.modal).modal('show')
       }
       
@@ -295,22 +242,14 @@ export default {
       async function _validCallback(valid) {
         if(valid) {
           var data = {
-            designerGuid: f.id || -1,
-            stats: f.status ? 1 : 2,
+            adminid: f.id || -1,
             username: f.username,
             pwd: f.pw,
             nick: f.nick,
-            storeGuid: f.store,
-            dob: moment(f.birth).format('YYYY-MM-DD'),
-            description: f.desc,
-            workingTime: f.workingTime,
-            gender: f.gender,
-            sinceYear: moment(f.sinceYear).format('YYYY'),
           }
-          if(this.loginInfo.type !== 1) data.storeGuid = this.storeInfo.storeGuid
-          var res = await this.modDesigner(data)
+          var res = await this.modManager(data)
           if(res.code === 0) {
-            this._getDesignerList()
+            this._getManagerList()
             $(this.$refs.modal).modal('hide')
             this.$message({
               type: 'success',

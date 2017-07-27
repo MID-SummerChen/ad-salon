@@ -9,7 +9,7 @@
             <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
           </el-select>
         </el-col>
-        <el-col :span="6">
+        <el-col v-if="loginInfo.type <= 2" :span="6">
           <el-select style="width: 100%" v-model="searchForm.designerGuid">
             <el-option label="請選擇設計師" value=""></el-option>
             <el-option v-for="d in designerList" :label="d.nick" :value="d.designerGuid"></el-option>
@@ -21,7 +21,7 @@
             <el-radio :label="2">下週</el-radio>
           </el-radio-group>
         </el-col>
-        <el-col :span="6">
+        <el-col v-if="loginInfo.type <= 2" :span="6">
           <el-button type="primary" @click="onSearch" :disabled="!searchForm.designerGuid">搜尋</el-button>
         </el-col>
       </el-row>
@@ -30,6 +30,8 @@
     <template v-if="datesOfWeek.length > 0">
       <el-button type="primary" @click="onSubmit">送出班表</el-button>
       <el-button type="danger" @click="avaliableTime = []">重設</el-button>
+      <div style="margin-top: 10px"></div>
+      <el-button size="small" v-for="d in datesOfWeek" @click="selectDate(d)">{{d | date}}</el-button>
       <div style="margin-top: 10px"></div>
       <el-table :data="timesOfDay" border height="500" style="width: 100%">
         <el-table-column prop="time" label="時間" fixed width="180"></el-table-column>
@@ -101,8 +103,10 @@ export default {
   mounted() {
     if(this.loginInfo.type === 1) {
       this._getStoreList()
-    }else {
+    }else if(this.loginInfo.type === 2){
       this._getDesignerList()
+    }else if(this.loginInfo.type === 3){
+      this.onSearch()
     }
     
   },
@@ -122,6 +126,29 @@ export default {
       'getDesignerList',
       'addAvailableTime',
     ]),
+    selectDate(date) {
+      console.log(date)
+      console.log(this.timesOfDay)
+      var count = _.filter(this.avaliableTime, {date}).length
+      console.log(count)
+      if(count === this.timesOfDay.length && count > 0) {
+        _.each(this.timesOfDay, dt => {
+          var i = _.findIndex(this.avaliableTime, {date, time: dt.time})
+          if(i > -1) {
+            this.avaliableTime = _.filter(this.avaliableTime, t => !(t.date === date && t.time === dt.time))
+          }
+        })
+      }else {
+        _.each(this.timesOfDay, dt => {
+          var i = _.findIndex(this.avaliableTime, {date, time: dt.time})
+          if(i === -1) {
+            this.avaliableTime = this.avaliableTime.concat([{date, time: dt.time}])
+          }
+        })
+      }
+      
+      
+    },
     addToAvaliable(date, time) {
       var i = _.findIndex(this.avaliableTime, {date, time})
       if(i > -1) {
@@ -157,6 +184,9 @@ export default {
         designerGuid: this.searchForm.designerGuid,
         searchDate: this.searchForm.weekType === 1 ? moment().add(1, 'd').format("YYYY-MM-DD") : moment().add(9, 'd').format("YYYY-MM-DD")
       }
+      if(this.loginInfo.type === 3) {
+        data.designerGuid = this.storeInfo.designerGuid
+      }
       var res = await this.getTimeTable(data)
       if(res.code === 0) {
         this.datesOfWeek = _.map(res.data.timeTable, "date")
@@ -179,6 +209,9 @@ export default {
       var data = {
         designerGuid: this.searchForm.designerGuid,
         avaliableTime: JSON.stringify(_.orderBy(times, ['date', 'time']))
+      }
+      if(this.loginInfo.type === 3) {
+        data.designerGuid = this.storeInfo.designerGuid
       }
       console.log(data)
       var res = await this.addAvailableTime(data)

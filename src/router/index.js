@@ -2,10 +2,12 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from '@/components/pages/Home'
 import Member from '@/components/pages/Member'
+import Manager from '@/components/pages/Manager'
 import Store from '@/components/pages/Store'
 import Basic from '@/components/pages/Basic'
 import Ad from '@/components/pages/Ad'
 import Designer from '@/components/pages/Designer'
+import DesignerBasic from '@/components/pages/DesignerBasic'
 import ServicePrice from '@/components/pages/ServicePrice'
 import Schedule from '@/components/pages/Schedule'
 import Permission from '@/components/pages/Permission'
@@ -33,6 +35,11 @@ var router = new Router({
           path: '/home',
           name: 'Home',
           component: Home
+        },
+        {
+          path: '/manager',
+          name: 'Manager',
+          component: Manager
         },
         {
           path: '/basic',
@@ -76,6 +83,11 @@ var router = new Router({
           component: Designer
         },
         {
+          path: '/designer/basic',
+          name: 'DesignerBasic',
+          component: DesignerBasic
+        },
+        {
           path: '/permission',
           name: 'Permission',
           component: Permission
@@ -92,20 +104,20 @@ var router = new Router({
 })
 
 router.beforeEach(async (to, from, next) => {
-    VuexStore.commit('GET_LOGIN_INFO')
-    if(!VuexStore.state.isLogin) {
-        var info = VuexStore.state.loginInfo
-        console.log(info)
-        if(info) {
-          await VuexStore.dispatch('onCheckLogin', {username: info.acc, loginType: info.type})
-        }
-    }
-    
-    if(to.name === 'Login' || VuexStore.state.isLogin) {
-        next()
-    }else {
-        next({name: 'Login'})
-    }
+  VuexStore.commit('GET_LOGIN_INFO')
+  if(!VuexStore.state.isLogin) {
+      var info = VuexStore.state.loginInfo
+      console.log(info)
+      if(info) {
+        await VuexStore.dispatch('onCheckLogin', {username: info.acc, loginType: info.type})
+      }
+  }
+  
+  if(to.name === 'Login' || VuexStore.state.isLogin) {
+      next()
+  }else {
+      next({name: 'Login'})
+  }
   
 })
 
