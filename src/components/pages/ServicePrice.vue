@@ -70,10 +70,10 @@
                 <el-input v-model="form.name"></el-input>
               </el-form-item>
               <el-form-item label="所需時間" prop="neededTime">
-                <el-input-number v-model="form.neededTime" :step="0.5"></el-input-number>
+                <el-input-number v-model="form.neededTime" :step="0.5" :min="0"></el-input-number>
               </el-form-item>
               <el-form-item label="價格" prop="price">
-                <el-input-number v-model="form.price" :controls="false"></el-input-number>
+                <el-input-number v-model="form.price" :controls="false" :min="0"></el-input-number>
               </el-form-item>
               <el-form-item label="描述">
                 <el-input type="textarea" v-model="form.descr"></el-input>
@@ -276,6 +276,9 @@ export default {
         f.price = s.price
         f.addr = s.address
         f.descr = s.descr
+        f.priceType = s.priceType-0
+        f.startDate = s.sdate
+        f.endDate = s.edate
         f.status = s.stats == 1
         f.imgSrc = s.pic
         $(this.$refs.modal).modal('show')

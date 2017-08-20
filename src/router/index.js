@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Home from '@/components/pages/Home'
 import Member from '@/components/pages/Member'
 import Manager from '@/components/pages/Manager'
+import StorePackage from '@/components/pages/StorePackage'
 import Store from '@/components/pages/Store'
 import Basic from '@/components/pages/Basic'
 import Ad from '@/components/pages/Ad'
@@ -40,6 +41,11 @@ var router = new Router({
           path: '/manager',
           name: 'Manager',
           component: Manager
+        },
+        {
+          path: '/package',
+          name: 'StorePackage',
+          component: StorePackage
         },
         {
           path: '/basic',

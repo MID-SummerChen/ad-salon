@@ -29,26 +29,28 @@
 
     <template v-if="datesOfWeek.length > 0">
       <el-button type="primary" @click="onSubmit">送出班表</el-button>
-      <el-button type="danger" @click="avaliableTime = []">重設</el-button>
+      <el-button type="danger" @click="onReset">重設</el-button>
       <div style="margin-top: 10px"></div>
       <el-button size="small" v-for="d in datesOfWeek" @click="selectDate(d)">{{d | date}}</el-button>
       <div style="margin-top: 10px"></div>
       <el-table :data="timesOfDay" border height="500" style="width: 100%">
         <el-table-column prop="time" label="時間" fixed width="180"></el-table-column>
         <template v-for="d in datesOfWeek">
-          <el-table-column :label="d | date" width="180">
+          <el-table-column :label="d | date" width="100">
             <template scope="scope">
-              <div :class="{
-                'bg-success': avaliableTime.findIndex(t => t.date === d && t.time === scope.row.time) > -1,
-                'bg-danger': avaliableTime.findIndex(t => t.date === d && t.time === scope.row.time && t.status == 2) > -1,
-                }" @click="addToAvaliable(d, scope.row.time)"></div>
+              <div style="background-color: #eee" v-if="isPastTime(d, scope.row.time) && avaliableTime.findIndex(t => t.date === d && t.time === scope.row.time) === -1"></div>
+              <div v-if="avaliableTime.findIndex(t => t.date === d && t.time === scope.row.time) === -1" @click="addToAvaliable(d, scope.row.time)"></div>
+              <div class="timeScope text-success bg-success" v-if="avaliableTime.findIndex(t => t.date === d && t.time === scope.row.time && t.status == 1) > -1" @click="addToAvaliable(d, scope.row.time)">可預約</div>
+              <div class="timeScope text-info bg-info" v-if="avaliableTime.findIndex(t => t.date === d && t.time === scope.row.time && t.status == 2) > -1" @click="getOrder(d, scope.row.time)">已預訂</div>
+              <div class="timeScope text-warning bg-warning" v-if="avaliableTime.findIndex(t => t.date === d && t.time === scope.row.time && t.status == 0) > -1">已取消</div>
+              <div class="timeScope text-danger bg-danger" v-if="avaliableTime.findIndex(t => t.date === d && t.time === scope.row.time && t.status == 3) > -1">失效</div>
             </template>
           </el-table-column>
         </template>
       </el-table>
       <div style="margin-top: 10px"></div>
       <el-button type="primary" @click="onSubmit">送出班表</el-button>
-      <el-button type="danger" @click="avaliableTime = []">重設</el-button>
+      <el-button type="danger" @click="onReset">重設</el-button>
     </template>
     
   </div>
@@ -97,7 +99,7 @@ export default {
         storeGuid: "",
         designerGuid: "",
         weekType: 1,
-      }
+      },
     }
   },
   mounted() {
@@ -123,26 +125,34 @@ export default {
     ...mapActions([
       'getTimeTable',
       'getStoreList',
+      'getOrderList',
       'getDesignerList',
       'addAvailableTime',
     ]),
+    async getOrder(date, time) {
+      var i = _.findIndex(this.avaliableTime, {date, time})
+      if(i > -1) {
+        var id = this.avaliableTime[i].orderGuid
+        this.$router.push({name: "Order", query: {id}})
+      }
+    },
+    isPastTime(date, time) {
+      return moment().isAfter(`${date} ${time}`)
+    },
     selectDate(date) {
-      console.log(date)
-      console.log(this.timesOfDay)
-      var count = _.filter(this.avaliableTime, {date}).length
-      console.log(count)
-      if(count === this.timesOfDay.length && count > 0) {
+      var count = _.filter(this.avaliableTime, t => t.date == date && (t.status == 1 || t.status == undefined) && !this.isPastTime(t.date, t.time)).length
+      if(count > 0) {
         _.each(this.timesOfDay, dt => {
           var i = _.findIndex(this.avaliableTime, {date, time: dt.time})
-          if(i > -1) {
+          if(i > -1 && !this.isPastTime(date, dt.time) && (this.avaliableTime[i].status == 1 || this.avaliableTime[i].status == undefined)) {
             this.avaliableTime = _.filter(this.avaliableTime, t => !(t.date === date && t.time === dt.time))
           }
         })
       }else {
         _.each(this.timesOfDay, dt => {
           var i = _.findIndex(this.avaliableTime, {date, time: dt.time})
-          if(i === -1) {
-            this.avaliableTime = this.avaliableTime.concat([{date, time: dt.time}])
+          if(i === -1 && !this.isPastTime(date, dt.time)) {
+            this.avaliableTime = this.avaliableTime.concat([{date, time: dt.time, status: '1'}])
           }
         })
       }
@@ -154,7 +164,7 @@ export default {
       if(i > -1) {
         this.avaliableTime = _.filter(this.avaliableTime, t => !(t.date === date && t.time === time))
       }else {
-        this.avaliableTime = this.avaliableTime.concat([{date, time}])
+        this.avaliableTime = this.avaliableTime.concat([{date, time, status: '1'}])
       }
       // console.log(date, time)
       // this.avaliableTime = this.avaliableTime.concat([{date, time}])
@@ -176,13 +186,13 @@ export default {
       this.searchForm.designerGuid = ""
       var res = await this.getDesignerList(data)
       if(res.code === 0) {
-        this.designerList = res.data.designerList
+        this.designerList = _(res.data.designerList).filter({stats: 1}).orderBy("appoint", "desc").value()
       }
     },
     async onSearch() {
       var data = {
         designerGuid: this.searchForm.designerGuid,
-        searchDate: this.searchForm.weekType === 1 ? moment().add(1, 'd').format("YYYY-MM-DD") : moment().add(9, 'd').format("YYYY-MM-DD")
+        searchDate: this.searchForm.weekType === 1 ? moment().format("YYYY-MM-DD") : moment().add(7, 'd').format("YYYY-MM-DD")
       }
       if(this.loginInfo.type === 3) {
         data.designerGuid = this.storeInfo.designerGuid
@@ -192,11 +202,14 @@ export default {
         this.datesOfWeek = _.map(res.data.timeTable, "date")
         this._avaliableTime = []
         _.each(res.data.timeTable, d => {
-          this._avaliableTime = this._avaliableTime.concat(_.map(d.timeArr, t => ({date: d.date, time: t.time, status: t.status})))
+          this._avaliableTime = this._avaliableTime.concat(_.map(d.timeArr, t => ({...t, date: d.date, time: t.time, status: t.status})))
         })
         this.avaliableTime = _.clone(this._avaliableTime)
         // console.log(this.avaliableTime)
       }
+    },
+    onReset() {
+      this.avaliableTime = _.clone(this._avaliableTime)
     },
     async onSubmit() {
       var times = _.clone(this.avaliableTime)
@@ -233,8 +246,10 @@ export default {
   .el-table
     th, td 
       height: 30px
+      .timeScope 
+        text-align: center
   .el-table .cell
-    // padding: 0 
+    padding: 0 10px
     height: 100%
     line-height: 30px
     > div 

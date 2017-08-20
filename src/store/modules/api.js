@@ -55,6 +55,7 @@ export default {
     modDesigner: async (store, data) => await apiInit(store, "POST", "form", `modDesigner.php`, data),
     getCityList: async (store, data) => await apiInit(store, "POST", "form", `getCity.php`, data),
     getPackageList: async (store, data) => await apiInit(store, "POST", "form", `getPackage.php`, data),
+    modPackage: async (store, data) => await apiInit(store, "POST", "form", `modPackage.php`, data),
     getBasic: async (store, data) => await apiInit(store, "POST", "form", `getBasic.php`, data),
     getTimeTable: async (store, data) => await apiInit(store, "POST", "form", `getTimeTable.php`, data),
     bookAvailableTime: async (store, data) => await apiInit(store, "POST", "form", `bookAvailableTime.php`, data),
@@ -94,7 +95,7 @@ async function apiInit({state, commit, dispatch}, method, contentType, route, da
   //     ...TimeToken
   //   }
 
-  console.log(Qs.stringify(data))
+  // console.log(Qs.stringify(data))
 
   var response = await axios({
     timeout: 60 * 1000,

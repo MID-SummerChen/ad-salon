@@ -43,8 +43,9 @@
       </el-table-column>
       <el-table-column fixed="right" label="操作" width="100">
         <template scope="scope">
-          <el-button v-if="scope.row.stats == 0" @click="onEdit(scope.row.orderGuid)" type="text" size="small">核銷</el-button>
-          <el-button v-if="scope.row.stats == 0" @click="onCancel(scope.row.orderGuid)" type="text" size="small">取消</el-button>
+          <el-button v-if="loginInfo.type != 3 && scope.row.stats != 0" @click="onSetQuery(scope.row.orderGuid)" type="text" size="small">編輯</el-button>
+          <el-button v-if="scope.row.stats == 0" @click="onSetQuery(scope.row.orderGuid)" type="text" size="small">核銷</el-button>
+          <el-button v-if="scope.row.stats == 0 || scope.row.stats == 1" @click="onCancel(scope.row.orderGuid)" type="text" size="small">取消</el-button>
           <!--<el-button @click="onDel(scope.row.orderGuid)" type="text" size="small">刪除</el-button>-->
         </template>
       </el-table-column>
@@ -81,12 +82,14 @@ export default {
       priceList: [],
       datesOfWeek: [],
       statusOpts: [
+        {label: "已過期", value: "3"},
         {label: "已取消", value: "2"},
         {label: "已核銷", value: "1"},
         {label: "未使用", value: "0"},
       ],
       searchForm: {
         storeGuid: "",
+        designerGuid: "",
         memberGuid: "",
         username: "",
         orderDate: "",
@@ -95,17 +98,34 @@ export default {
       },
     }
   },
-  mounted() {
+  async mounted() {
     if(this.loginInfo.type === 1) {
       this.v_getStoreList()
       this.v_getMemberList()
-      this._getOrderList()
+      await this._getOrderList()
     }else {
-      this._getOrderList()
-      this._getDesignerList()
-      this._getPriceList()
+      await this._getOrderList()
+      // this._getDesignerList()
+      // this._getPriceList()
     }
+
+
+    if(this.$route.query.id) {
+      this.onEdit(this.$route.query.id)
+    }
+
+
+    $(this.$refs.editPopup.$el).on("hidden.bs.modal", () => {
+      this.$router.push({name: "Order"})
+    })
     
+  },
+  watch: {
+    $route() {
+      if(this.$route.query.id) {
+        this.onEdit(this.$route.query.id)
+      }
+    }
   },
   computed: {
     ...mapState([
@@ -152,7 +172,8 @@ export default {
       if(sf.doneDate) data.doneDate = sf.doneDate
       if(sf.status) data.stats = sf.status
 
-      if(this.loginInfo.type !== 1) data.storeGuid = this.storeInfo.storeGuid
+      if(this.loginInfo.type === 2) data.storeGuid = this.storeInfo.storeGuid
+      if(this.loginInfo.type === 3) data.designerGuid = this.storeInfo.designerGuid
 
       var res = await this.getOrderList(data)
       if(res.code === 0) {
@@ -160,6 +181,7 @@ export default {
         this.pagination.page = res.data.pageNo
         this.pagination.count = this.orderList.length
       }
+      return
     },
     onDel(id) {
       this.$confirm('是否確定刪除？', '提示', {
@@ -187,6 +209,9 @@ export default {
         });
       });
       
+    },
+    onSetQuery(id) {
+      this.$router.push({name: "Order", query: {id}})
     },
     onEdit(id) {
       var f = this.$refs.editPopup.form
@@ -226,7 +251,6 @@ export default {
         vips: f.vip ? 1 : 0,
         stats: 1,
       }
-      console.log(data)
 
       var res = await this.bookAvailableTime(data)
       if(res.code === 0) {
@@ -247,7 +271,6 @@ export default {
         var data = {
           del: 1,
           orderGuid,
-          stats: 2,
         }
         var res = await this.bookAvailableTime(data)
         if(res.code === 0) {

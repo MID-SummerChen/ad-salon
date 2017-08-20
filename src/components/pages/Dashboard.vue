@@ -63,6 +63,7 @@ export default {
           {name: '會員管理', link: '/member'},
           {name: '訂單管理', link: '/order'},
           {name: '廣告管理', link: '/ad'},
+          {name: '方案管理', link: '/package'},
         ],
         manager: [
           {name: '首頁', link: '/home'},
@@ -72,12 +73,13 @@ export default {
           {name: '作品管理', link: '/work'},
           {name: '訂單管理', link: '/order'},
           {name: '預約行事曆', link: '/schedule'},
-          {name: '廣告管理', link: '/ad'},
+          // {name: '廣告管理', link: '/ad'},
         ],
         designer: [
           {name: '首頁', link: '/home'},
           {name: '基本資料', link: '/designer/basic'},
           {name: '作品管理', link: '/work'},
+          {name: '訂單管理', link: '/order'},
           {name: '預約行事曆', link: '/schedule'},
         ],
       }

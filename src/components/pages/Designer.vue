@@ -15,33 +15,60 @@
         </el-col>
       </el-row>
     </div>
-    <el-table
-      :data="designerList"
-      style="width: 100%">
-      <el-table-column v-if="loginInfo.type === 1" label="髮廊" width="150">
-        <template scope="scope">
-          {{toStore(scope.row.storeGuid)}}
-        </template>
-      </el-table-column>
-      <el-table-column label="設計師帳號" prop="username" width="120"></el-table-column>
-      <el-table-column label="暱稱" prop="nick" width="120"></el-table-column>
-      <el-table-column label="作品數" prop="workNum" width="100"></el-table-column>
-      <el-table-column label="成交(總)" prop="orderDone" width="100"></el-table-column>
-      <el-table-column label="成交(月)" prop="orderDoneMon" width="100"></el-table-column>
-      <el-table-column label="狀態">
-        <template scope="scope">
-          {{toStatus(scope.row.stats)}}
-        </template>
-      </el-table-column>
-      <el-table-column fixed="right" label="操作" width="100">
-        <template scope="scope">
-          <el-button @click="onEdit(scope.row.designerGuid)" type="text" size="small">编辑</el-button>
-          <el-button @click="onDel(scope.row.designerGuid)" type="text" size="small">刪除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+    
     <div style="margin-top: 10px"></div>
-    <el-pagination layout="prev, pager, next" :total="pagination.count" :page-size="pagination.perpage"></el-pagination>
+    <el-row :gutter="20">
+      <el-col :span="16">
+        <el-table :data="appointDesigners" style="width: 100%">
+          <el-table-column v-if="loginInfo.type === 1" label="髮廊" width="150">
+            <template scope="scope">
+              {{toStore(scope.row.storeGuid)}}
+            </template>
+          </el-table-column>
+          <el-table-column label="設計師帳號" prop="username" width="120"></el-table-column>
+          <el-table-column label="暱稱" prop="nick" width="120"></el-table-column>
+          <el-table-column label="指定價格" prop="price" width="120"></el-table-column>
+          <el-table-column label="作品數" prop="workNum" width="100"></el-table-column>
+          <el-table-column label="成交(總)" prop="orderDone" width="100"></el-table-column>
+          <el-table-column label="成交(月)" prop="orderDoneMon" width="100"></el-table-column>
+          <el-table-column label="狀態">
+            <template scope="scope">
+              {{toStatus(scope.row.stats)}}
+            </template>
+          </el-table-column>
+          <el-table-column fixed="right" label="操作" width="100">
+            <template scope="scope">
+              <el-button @click="onEdit(scope.row.designerGuid)" type="text" size="small">编辑</el-button>
+              <el-button @click="onDel(scope.row.designerGuid)" type="text" size="small">刪除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-col>
+      <el-col :span="8">
+        <h4 style="margin-bottom: 20px">不指定設計師</h4>
+        <el-table :data="noAppointDesigners">
+          <el-table-column label="名稱" prop="nick" width="120"></el-table-column>  
+          <!-- <el-table-column label="編號">
+            <template scope="scope">
+              #{{scope.$index + 1}}
+            </template>
+          </el-table-column> -->
+          <el-table-column label="狀態">
+            <template scope="scope">
+              {{toStatus(scope.row.stats)}}
+            </template>
+          </el-table-column>
+          <el-table-column fixed="right" label="操作" width="100">
+            <template scope="scope">
+              <!-- <el-button @click="onOtherEdit(scope.row.designerGuid)" type="text" size="small">更名</el-button> -->
+              <el-button v-if="scope.row.stats == 2" @click="onChangeStatus(scope.row.designerGuid, true)" type="text" size="small">開啟</el-button>
+              <el-button v-if="scope.row.stats == 1" @click="onChangeStatus(scope.row.designerGuid, false)" type="text" size="small">關閉</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <!-- <el-pagination layout="prev, pager, next" :total="pagination.count" :page-size="pagination.perpage"></el-pagination> -->
+      </el-col>
+    </el-row>
 
      <!-- Modal -->
     <div ref="modal" class="modal fade">
@@ -70,15 +97,18 @@
               <el-form-item label="密碼確認" prop="pw_c">
                 <el-input type="password" v-model="form.pw_c"></el-input>
               </el-form-item>
+              <el-form-item label="指定價格" prop="price">
+                <el-input-number v-model="form.price" :min="0" :step="10"></el-input-number>
+              </el-form-item>
               <el-form-item label="生日" prop="birth">
                 <el-date-picker v-model="form.birth" type="date"></el-date-picker>
               </el-form-item>
               <el-form-item label="資歷(since)" prop="sinceYear">
                 <el-date-picker v-model="form.sinceYear" type="year"></el-date-picker>
               </el-form-item>
-              <el-form-item label="工作時間" prop="workingTime">
+              <!-- <el-form-item label="工作時間" prop="workingTime">
                 <el-input v-model="form.workingTime"></el-input>
-              </el-form-item>
+              </el-form-item> -->
               <el-form-item label="性別" prop="gender">
                 <el-radio-group v-model="form.gender">
                   <el-radio :label="1">男</el-radio>
@@ -148,10 +178,11 @@ export default {
         pw_c: "",
         status: true,
         store: "",
+        price: 0,
         birth: moment(),
         desc: "",
         workingTime: "",
-        gender: "1",
+        gender: 1,
         sinceYear: moment(),
       },
       rules: {
@@ -167,6 +198,24 @@ export default {
         pw_c: [
           { validator: validPwConfirm},
         ],
+        birth: [
+          { required: true, message: '不可為空'}
+        ],
+        status: [
+          { required: true, message: '不可為空'}
+        ],
+        store: [
+          { required: true, message: '不可為空'}
+        ],
+        desc: [
+          { required: true, message: '不可為空'}
+        ],
+        gender: [
+          { required: true, message: '不可為空'}
+        ],
+        sinceYear: [
+          { required: true, message: '不可為空'}
+        ],
       }
     }
   },
@@ -181,7 +230,12 @@ export default {
 
   },
   computed: {
-
+    appointDesigners() {
+      return _.filter(this.designerList, {appoint: 1})
+    },
+    noAppointDesigners() {
+      return _.filter(this.designerList, {appoint: 2})
+    }
   },
   methods: {
     ...mapActions([
@@ -211,10 +265,11 @@ export default {
         pw_c: "",
         status: true,
         store: "",
+        price: 0,
         birth: moment(),
         desc: "",
         workingTime: "",
-        gender: "1",
+        gender: 1,
         sinceYear: moment(),
       }
     },
@@ -233,9 +288,26 @@ export default {
 
       var res = await this.getDesignerList(data)
       if(res.code === 0) {
-        this.designerList = res.data.designerList.map(designer => this._initDesigner(designer))
+        this.designerList = _.map(res.data.designerList, designer => this._initDesigner(designer))
         this.pagination.page = res.data.pageNo
         this.pagination.count = this.designerList.length
+      }
+    },
+    async onChangeStatus(id, boo) {
+      var i = _.findIndex(this.designerList, {designerGuid: id})
+      if(i > -1) {
+        var data = {
+          ...this.designerList[i],
+          stats: boo ? 1 : 2
+        }
+        var res = await this.modDesigner(data)
+        if(res.code === 0) {
+          this.$message({
+            type: 'success',
+            message: boo ? '已開啟' : '已關閉'
+          });
+          this._getDesignerList()
+        }
       }
     },
     onDel(id) {
@@ -301,6 +373,7 @@ export default {
             pwd: f.pw,
             nick: f.nick,
             storeGuid: f.store,
+            price: f.price,
             dob: moment(f.birth).format('YYYY-MM-DD'),
             description: f.desc,
             workingTime: f.workingTime,
@@ -327,3 +400,7 @@ export default {
   }
 }
 </script>
+<style lang="stylus" scoped>
+  .el-table--fit
+    border-right: 1px solid #dfe6ec
+</style>

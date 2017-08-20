@@ -1,24 +1,17 @@
 <template>
-  <div id="manager">
+  <div id="Package">
     <div class="page-header">
-      <h1>管理員設定</h1>
-      <el-row :gutter="10">
-        <el-col :span="6">
-          <el-input v-model="searchForm.username" placeholder="管理員帳號"></el-input>
-        </el-col>
-        <el-col :span="6">
-          <el-button v-if="loginInfo.type === 1" type="primary" @click="onSearch">搜尋</el-button>
-          <el-button type="danger" @click="onCreate">新增管理員</el-button>
-        </el-col>
-      </el-row>
+      <h1>方案設定</h1>
+      <el-button type="danger" @click="onCreate">新增方案</el-button>
     </div>
-    <el-table :data="managerList" style="width: 100%">
-      <el-table-column label="管理員帳號" prop="username"></el-table-column>
-      <el-table-column label="暱稱" prop="nick"></el-table-column>
+    <el-table :data="PackageList" style="width: 100%">
+      <el-table-column label="方案名稱" prop="name"></el-table-column>
+      <el-table-column label="指定設計師" prop="appoint"></el-table-column>
+      <el-table-column label="不指定設計師" prop="nappoint"></el-table-column>
       <el-table-column fixed="right" label="操作" width="150">
         <template scope="scope">
-          <el-button @click="onEdit(scope.row.adminid)" type="text" size="small">编辑</el-button>
-          <el-button @click="onDel(scope.row.adminid)" type="text" size="small">刪除</el-button>
+          <el-button @click="onEdit(scope.row.packageGuid)" type="text" size="small">编辑</el-button>
+          <el-button @click="onDel(scope.row.packageGuid)" type="text" size="small">刪除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -31,21 +24,21 @@
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title">管理員資訊</h4>
+            <h4 class="modal-title">方案資訊</h4>
           </div>
           <div class="modal-body">
             <el-form ref="form" :model="form" :rules="rules" label-width="120px">
-              <el-form-item label="帳號" prop="username">
-                <el-input v-model="form.username" :disabled="!!form.id"></el-input>
+              <el-form-item label="方案名稱" prop="name">
+                <el-input v-model="form.name"></el-input>
               </el-form-item>
-              <el-form-item label="暱稱" prop="nick">
-                <el-input v-model="form.nick"></el-input>
+              <el-form-item label="方案說明" prop="descr">
+                <el-input v-model="form.descr"></el-input>
               </el-form-item>
-              <el-form-item label="密碼" prop="pw">
-                <el-input type="password" v-model="form.pw"></el-input>
+              <el-form-item label="指定設計師數量" prop="descr">
+                <el-input-number v-model="form.appoint" :min="1" :max="10"></el-input-number>
               </el-form-item>
-              <el-form-item label="密碼確認" prop="pw_c">
-                <el-input type="password" v-model="form.pw_c"></el-input>
+              <el-form-item label="不指定設計師數量" prop="descr">
+                <el-input-number v-model="form.nappoint" :min="1" :max="10"></el-input-number>
               </el-form-item>
               
             </el-form>
@@ -66,7 +59,7 @@ import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
 import { required, minLength, between, sameAs } from 'vuelidate/lib/validators'
 import globalMixin from '@/mixins/global'
 export default {
-  name: 'Manager',
+  name: 'Package',
   mixins: [globalMixin],
   data() {
     var validPw = (rule, value, cb) => {
@@ -90,37 +83,33 @@ export default {
       }
     };
     return {
-      managerList: [],
+      PackageList: [],
       storeList: [],
       searchForm: {
-        username: ""
+        name: ""
       },
       form: {
         id: "",
-        username: "",
-        nick: "",
-        pw: "",
-        pw_c: "",
-        status: true,
+        name: "",
+        descr: "",
+        appoint: "",
+        nappoint: "",
       },
       rules: {
-        username: [
+        name: [
           { required: true, message: '不可為空'}
         ],
-        nick: [
+        appoint: [
           { required: true, message: '不可為空'}
         ],
-        pw: [
-          { validator: validPw},
-        ],
-        pw_c: [
-          { validator: validPwConfirm},
+        nappoint: [
+          { required: true, message: '不可為空'}
         ],
       }
     }
   },
   mounted() {
-    this._getManagerList()
+    this._getPackageList()
   },
   computed: {
 
@@ -128,16 +117,16 @@ export default {
   methods: {
     ...mapActions([
       'getStoreList',
-      'getManagerList',
-      'modManager',
+      'getPackageList',
+      'modPackage',
     ]),
-    _initManager(manager) {
+    _initPackage(Package) {
       return {
-        ...manager
+        ...Package
       }
     },
     async onSearch() {
-      this._getManagerList()
+      this._getPackageList()
     },
     toStore(id) {
       var i = this.storeList.findIndex(store => store.storeGuid === id)
@@ -147,11 +136,10 @@ export default {
       this.$refs.form.resetFields()
       this.form = _.assign({}, this.form, {
         id: "",
-        username: "",
-        nick: "",
-        pw: "",
-        pw_c: "",
-        status: true,
+        name: "",
+        descr: "",
+        appoint: "",
+        nappoint: "",
       })
     },
     async _getStoreList() {
@@ -160,17 +148,17 @@ export default {
         this.storeList = res.data.storeList
       }
     },
-    async _getManagerList() {
+    async _getPackageList() {
       var data = {
         pageNo: this.pagination.page
       }
-      if(this.searchForm.username) data.username = this.searchForm.username
+      if(this.searchForm.name) data.name = this.searchForm.name
 
-      var res = await this.getManagerList(data)
+      var res = await this.getPackageList(data)
       if(res.code === 0) {
-        this.managerList = res.data.adminList.map(manager => this._initManager(manager))
+        this.PackageList = res.data.package.map(Package => this._initPackage(Package))
         this.pagination.page = res.data.pageNo
-        this.pagination.count = this.managerList.length
+        this.pagination.count = this.PackageList.length
       }
     },
     onDel(id) {
@@ -180,16 +168,16 @@ export default {
         type: 'warning'
       }).then(async () => {
         var data = {
-          adminid: id,
+          packageGuid: id,
           del: 1
         }
-        var res = await this.modManager(data)
+        var res = await this.modPackage(data)
         if(res.code === 0) {
           this.$message({
             type: 'success',
             message: '删除成功!'
           });
-          this._getManagerList()
+          this._getPackageList()
         }
         
       }).catch(() => {
@@ -203,12 +191,14 @@ export default {
     onEdit(id) {
       this.clearForm()
       var f = this.form
-      var i = this.managerList.findIndex(manager => manager.adminid === id)
+      var i = this.PackageList.findIndex(Package => Package.packageGuid === id)
       if(i > -1) {
-        var s = this.managerList[i]
+        var s = this.PackageList[i]
         f.id = id
-        f.username = s.username
-        f.nick = s.nick
+        f.name = s.name
+        f.descr = s.descr
+        f.nappoint = s.nappoint
+        f.appoint = s.appoint
         $(this.$refs.modal).modal('show')
       }
       
@@ -224,14 +214,15 @@ export default {
       async function _validCallback(valid) {
         if(valid) {
           var data = {
-            adminid: f.id || -1,
-            username: f.username,
-            pwd: f.pw,
-            nick: f.nick,
+            packageGuid: f.id || -1,
+            name: f.name,
+            descr: f.descr,
+            nappoint: f.nappoint,
+            appoint: f.appoint,
           }
-          var res = await this.modManager(data)
+          var res = await this.modPackage(data)
           if(res.code === 0) {
-            this._getManagerList()
+            this._getPackageList()
             $(this.$refs.modal).modal('hide')
             this.$message({
               type: 'success',

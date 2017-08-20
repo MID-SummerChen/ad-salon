@@ -56,12 +56,14 @@ export default new Vuex.Store({
       if(res.code === 0) {
         commit("GOT_ALL_MEMBERS", res.data.memberList)
       }
+      return
     },
     async v_getStoreList({ state, commit, dispatch, rootState }) {
       var res = await dispatch("getStoreList")
       if(res.code === 0) {
         commit("GOT_ALL_STORES", res.data.storeList)
       }
+      return
     },
     async onCheckLogin({ state, commit, dispatch, rootState }, data) {
       var res = await dispatch("checkLogin", data)

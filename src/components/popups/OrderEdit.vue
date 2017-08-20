@@ -90,7 +90,7 @@ export default {
     }
   },
   mounted() {
-    
+    this.onSelectedStore()
   },
   computed: {
     ...mapState([
@@ -185,11 +185,11 @@ export default {
     async _getTimeTable() {
       var data1 ={
         designerGuid: this.form.designerGuid,
-        searchDate: moment().add(1, 'd').format("YYYY-MM-DD")
+        searchDate: moment().add(0, 'd').format("YYYY-MM-DD")
       }
       var data2 ={
         designerGuid: this.form.designerGuid,
-        searchDate: moment().add(9, 'd').format("YYYY-MM-DD")
+        searchDate: moment().add(8, 'd').format("YYYY-MM-DD")
       }
       var res1 = await this.getTimeTable(data1)
       var res2 = await this.getTimeTable(data2)
@@ -206,6 +206,7 @@ export default {
       var data = {
         del: 2,
         orderGuid: f.id,
+        gold: f.gold,
         service: JSON.stringify(f.priceGuids),
         vips: f.vip ? 1 : 0,
         stats: 1,

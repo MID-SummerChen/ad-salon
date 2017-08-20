@@ -17,12 +17,20 @@ gulp.task('sprite', function () {
   return spriteData.pipe(gulp.dest('static/css'));
 });
 
-gulp.task('replace', function(){
+gulp.task('replace:css', function(){
   return gulp.src(['dist/static/css/combined.css'])
     .pipe(replace('url(../fonts', 'url(/static/fonts'))
     .pipe(replace('url(fonts', 'url(/static/fonts'))
-    .pipe(gulp.dest('dist/static/css'));
+    .pipe(gulp.dest('dist/static/css'))
 });
+
+gulp.task('replace:html', function(){
+  return gulp.src('dist/index.html')
+    .pipe(replace('/static', 'static'))
+    .pipe(gulp.dest('dist'))
+});
+
+gulp.task('replace', ['replace:css', 'replace:html']);
 
 gulp.task('bundle', function () {
   return gulp.src('dist/*.html')

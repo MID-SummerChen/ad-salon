@@ -92,7 +92,7 @@
               </el-form-item>
               <el-form-item label="方案">
                 <el-select v-model="form.package">
-                  <el-option v-for="(pkg, i) in pkgList" :label="pkg" :value="pkg"></el-option>
+                  <el-option v-for="(pkg, i) in pkgList" :label="pkg.name" :value="pkg.packageGuid"></el-option>
                 </el-select>
               </el-form-item>
               <el-form-item label="公休日">

@@ -25,9 +25,9 @@
         <el-form-item label="資歷(since)" prop="sinceYear">
           <el-date-picker v-model="form.sinceYear" type="year"></el-date-picker>
         </el-form-item>
-        <el-form-item label="工作時間" prop="workingTime">
+        <!-- <el-form-item label="工作時間" prop="workingTime">
           <el-input v-model="form.workingTime"></el-input>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="性別" prop="gender">
           <el-radio-group v-model="form.gender">
             <el-radio :label="1">男</el-radio>
@@ -113,6 +113,24 @@ export default {
         ],
         pw_c: [
           { validator: validPwConfirm},
+        ],
+        birth: [
+          { required: true, message: '不可為空'}
+        ],
+        status: [
+          { required: true, message: '不可為空'}
+        ],
+        store: [
+          { required: true, message: '不可為空'}
+        ],
+        desc: [
+          { required: true, message: '不可為空'}
+        ],
+        gender: [
+          { required: true, message: '不可為空'}
+        ],
+        sinceYear: [
+          { required: true, message: '不可為空'}
         ],
       }
     }

@@ -227,11 +227,11 @@ export default {
     async _getTimeTable() {
       var data1 ={
         designerGuid: this.form.designerGuid,
-        searchDate: moment().add(1, 'd').format("YYYY-MM-DD")
+        searchDate: moment().format("YYYY-MM-DD")
       }
       var data2 ={
         designerGuid: this.form.designerGuid,
-        searchDate: moment().add(9, 'd').format("YYYY-MM-DD")
+        searchDate: moment().add(8, 'd').format("YYYY-MM-DD")
       }
       var res1 = await this.getTimeTable(data1)
       var res2 = await this.getTimeTable(data2)

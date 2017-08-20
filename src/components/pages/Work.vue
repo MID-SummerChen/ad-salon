@@ -119,21 +119,21 @@
                 <el-input v-model="form.descr" type="textarea" :rows="2"></el-input>
                 
               </el-form-item>
-              <el-form-item label="髮色">
+              <!-- <el-form-item label="髮色">
                 <el-select v-model="form.hColor" style="width: 100%">
                   <el-option v-for="h in hairColorList" :value="h"></el-option>
                 </el-select>
-              </el-form-item>
+              </el-form-item> -->
               <el-form-item label="髮長">
                 <el-select v-model="form.hLength" style="width: 100%">
                   <el-option v-for="h in hairLenList" :value="h"></el-option>
                 </el-select>
               </el-form-item>
-              <el-form-item label="風格">
+              <!-- <el-form-item label="風格">
                 <el-select v-model="form.style" style="width: 100%">
                   <el-option v-for="h in hairStyleList" :value="h"></el-option>
                 </el-select>
-              </el-form-item>
+              </el-form-item> -->
               <el-form-item label="性別">
                 <el-radio-group v-model="form.gender">
                   <el-radio v-for="opt in genderOpts" :label="opt.value">{{opt.label}}</el-radio>
@@ -297,7 +297,7 @@ export default {
 
       var res = await this.getDesignerList(data)
       if(res.code === 0) {
-        this.designerList = res.data.designerList
+        this.designerList = _(res.data.designerList).filter({appoint: 1}).value()
       }
     },
     toGender(val) {
