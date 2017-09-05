@@ -250,16 +250,16 @@ export default {
           var f = this.form
           var data = {
             advGuid: f.id || -1,
-            storeGuid: f.storeGuid,
             advName: f.advName,
             url: f.url,
             sDate: moment(f.sDate).format('YYYY-MM-DD'),
             eDate: moment(f.eDate).format('YYYY-MM-DD'),
             stats: f.status ? 1 : 2,
           }
-          if(this.loginType !== 1) {
+          if(this.loginInfo.type !== 1) {
             data.storeGuid = this.storeInfo.storeGuid
           }
+          console.log(data)
 
           var formData = new FormData()
           formData.append('pic', this.$refs.fileSelector.files[0])

@@ -18,9 +18,9 @@
         <el-form-item label="店家名稱" prop="storeName">
           <el-input v-model="form.storeName"></el-input>
         </el-form-item>
-        <el-form-item label="店家簡述" prop="intro">
+        <!-- <el-form-item label="店家簡述" prop="intro">
           <el-input v-model="form.intro" type="textarea" :rows="2"></el-input>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="詳細介紹" prop="descr">
           <el-input v-model="form.descr" type="textarea" :rows="5"></el-input>
         </el-form-item>
@@ -48,7 +48,7 @@
           <el-input v-model="form.mobile"></el-input>
         </el-form-item>
         <el-form-item label="方案">
-          {{form.package}}
+          {{form.package || '無方案'}}
         </el-form-item>
         <el-form-item label="公休日">
           <el-checkbox v-for="(d, i) in dates" v-model="form.restDates[i]" :true-label="1" :false-label="0">{{d}}</el-checkbox>
@@ -184,9 +184,12 @@ export default {
             vips: f.vip ? 1 : 0
           }
 
+          
           var formData = new FormData()
-          formData.append('pic', this.$refs.fileSelector.files[0])
           _.forEach(data, (v, k) => formData.append(k, v))
+          if(this.$refs.fileSelector.files[0]) {
+            formData.append('pic', this.$refs.fileSelector.files[0])
+          }
           var res = await this.modStore(formData)
           if(res.code === 0) {
             this.onCheckLogin({loginType: this.loginInfo.type, username: this.loginInfo.acc})

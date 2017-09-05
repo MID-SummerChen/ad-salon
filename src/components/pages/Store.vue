@@ -58,9 +58,9 @@
               <el-form-item label="店家名稱" prop="storeName">
                 <el-input v-model="form.storeName"></el-input>
               </el-form-item>
-              <el-form-item label="店家簡述" prop="intro">
+              <!-- <el-form-item label="店家簡述" prop="intro">
                 <el-input type="textarea" :rows="2" v-model="form.intro"></el-input>
-              </el-form-item>
+              </el-form-item> -->
               <el-form-item label="詳細介紹" prop="descr">
                 <el-input type="textarea" :rows="4" v-model="form.descr"></el-input>
               </el-form-item>

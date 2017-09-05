@@ -97,7 +97,7 @@
               <el-form-item label="作品名稱" prop="workName">
                 <el-input v-model="form.workName"></el-input>
               </el-form-item>
-              <el-form-item v-if="loginInfo.type === 1" label="髮廊">
+              <el-form-item v-if="loginInfo.type === 1" label="髮廊" prop="storeGuid">
                 <el-select v-model="form.storeGuid" style="width: 100%">
                   <el-option v-for="s in storeList" :label="s.storeName" :value="s.storeGuid"></el-option>
                 </el-select>
@@ -112,38 +112,38 @@
                   <el-option v-for="p in priceList" :label="p.name" :value="p.priceGuid"></el-option>
                 </el-select>
               </el-form-item>
-              <el-form-item label="價格">
+              <el-form-item label="價格" prop="price">
                 {{form.price}}
               </el-form-item>
-              <el-form-item label="描述">
+              <el-form-item label="描述" prop="descr">
                 <el-input v-model="form.descr" type="textarea" :rows="2"></el-input>
                 
               </el-form-item>
-              <!-- <el-form-item label="髮色">
+              <!-- <el-form-item label="髮色" prop="hColor">
                 <el-select v-model="form.hColor" style="width: 100%">
                   <el-option v-for="h in hairColorList" :value="h"></el-option>
                 </el-select>
               </el-form-item> -->
-              <el-form-item label="髮長">
+              <el-form-item label="髮長" prop="hLength">
                 <el-select v-model="form.hLength" style="width: 100%">
                   <el-option v-for="h in hairLenList" :value="h"></el-option>
                 </el-select>
               </el-form-item>
-              <!-- <el-form-item label="風格">
+              <!-- <el-form-item label="風格" prop="style">
                 <el-select v-model="form.style" style="width: 100%">
                   <el-option v-for="h in hairStyleList" :value="h"></el-option>
                 </el-select>
               </el-form-item> -->
-              <el-form-item label="性別">
+              <el-form-item label="性別" prop="gender">
                 <el-radio-group v-model="form.gender">
                   <el-radio v-for="opt in genderOpts" :label="opt.value">{{opt.label}}</el-radio>
                 </el-radio-group>
               </el-form-item>
-              <el-form-item label="完成日期">
+              <el-form-item label="完成日期" prop="workdate">
                 <el-date-picker type="date" placeholder="ex: 2017-5-20" v-model="form.workdate" style="width: 100%;"></el-date-picker>
               </el-form-item>
               
-              <el-form-item label="狀態">
+              <el-form-item label="狀態" prop="status">
                 <el-switch on-text="" off-text="" v-model="form.status"></el-switch>
               </el-form-item>
               
@@ -207,6 +207,9 @@ export default {
         workName: [
           { required: true, message: '不可為空'}
         ],
+        storeGuid: [
+          { required: true, message: '不可為空'}
+        ],
         designerGuid: [
           { required: true, message: '不可為空'}
         ],
@@ -214,6 +217,24 @@ export default {
           { required: true, message: '不可為空'}
         ],
         noid: [
+          { required: true, message: '不可為空'}
+        ],
+        price: [
+          { required: true, message: '不可為空'}
+        ],
+        descr: [
+          { required: true, message: '不可為空'}
+        ],
+        hLength: [
+          { required: true, message: '不可為空'}
+        ],
+        workdate: [
+          { required: true, message: '不可為空'}
+        ],
+        gender: [
+          { required: true, message: '不可為空'}
+        ],
+        status: [
           { required: true, message: '不可為空'}
         ],
       }

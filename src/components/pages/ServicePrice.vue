@@ -75,10 +75,10 @@
               <el-form-item label="價格" prop="price">
                 <el-input-number v-model="form.price" :controls="false" :min="0"></el-input-number>
               </el-form-item>
-              <el-form-item label="描述">
+              <el-form-item label="描述" prop="descr">
                 <el-input type="textarea" v-model="form.descr"></el-input>
               </el-form-item>
-              <el-form-item label="價格類型">
+              <el-form-item label="價格類型" prop="priceType">
                 <el-radio-group v-model="form.priceType">
                   <el-radio v-for="opt in priceTypeOpts" :label="opt.value">{{opt.label}}</el-radio>
                 </el-radio-group>
@@ -89,7 +89,7 @@
                 <el-date-picker type="date" v-model="form.endDate" placeholder="結束時間"></el-date-picker>
               </el-form-item>
               
-              <el-form-item label="狀態">
+              <el-form-item label="狀態" prop="status">
                 <el-switch on-text="" off-text="" v-model="form.status"></el-switch>
               </el-form-item>
               
@@ -159,6 +159,15 @@ export default {
           { validator: valideNeededTime, trigger: 'change' }
         ],
         price: [
+          { required: true, message: '不可為空'}
+        ],
+        priceType: [
+          { required: true, message: '不可為空'}
+        ],
+        descr: [
+          { required: true, message: '不可為空'}
+        ],
+        status: [
           { required: true, message: '不可為空'}
         ],
       }

@@ -45,7 +45,7 @@
         <template scope="scope">
           <el-button v-if="loginInfo.type != 3 && scope.row.stats != 0" @click="onSetQuery(scope.row.orderGuid)" type="text" size="small">編輯</el-button>
           <el-button v-if="scope.row.stats == 0" @click="onSetQuery(scope.row.orderGuid)" type="text" size="small">核銷</el-button>
-          <el-button v-if="scope.row.stats == 0 || scope.row.stats == 1" @click="onCancel(scope.row.orderGuid)" type="text" size="small">取消</el-button>
+          <el-button v-if="(scope.row.stats == 0 || scope.row.stats == 1) && loginInfo.type === 1" @click="onCancel(scope.row.orderGuid)" type="text" size="small">取消</el-button>
           <!--<el-button @click="onDel(scope.row.orderGuid)" type="text" size="small">刪除</el-button>-->
         </template>
       </el-table-column>
