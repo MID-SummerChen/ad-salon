@@ -52,8 +52,8 @@
                   <img :src="form.imgSrc" alt="">
                 </div>
               </el-form-item>
-              <el-form-item label="店家編號" prop="noid">
-                <el-input v-model="form.noid" :disabled="true"></el-input>
+              <el-form-item v-if="form.id" label="店家編號" prop="noid">
+                <p>{{form.noid}}</p>
               </el-form-item>
               <el-form-item label="店家名稱" prop="storeName">
                 <el-input v-model="form.storeName"></el-input>
